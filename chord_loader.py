@@ -12,6 +12,10 @@ def chord_simplify(df):
     #extract string matches from chord column
     matchstr = r'^([^:(\/]+):?([^(\/]+)?(?:\(([^)]+)\))?(?:\/(\S*))?$'
     m = df['chord'].str.extract(matchstr)
+    #m[0] is the root
+    #m[1] is the shorthand (e.g. min7, maj
+    #m[2] is added intervals
+    #m[3] is bass
     
     ####################
     #Define some dicts
@@ -67,7 +71,12 @@ def chord_simplify(df):
         return shorthand_to_quality[row[1]]
     elif row[0] != 'N' and row[0] != 'X':
         #some chords just aren't labeled properly, but I think they're major chords.
-        return 'maj'
+        if row[2] == '1,5':
+            return 'power'
+        elif row[2] = '1':
+            return 'unison'
+        else:
+            return 'maj'
     else:
         return np.nan
 
