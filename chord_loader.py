@@ -62,13 +62,14 @@ def chord_simplify(df):
         else:
             return root_to_num[row[0]]
     
-    #returns quality
     def get_quality(row):
-        if row[1] in shorthand_to_quality:
-            return shorthand_to_quality[row[1]]
-        else:
-            #some chords just aren't labeled properly, but I think they're major chords.
-            return 'maj'
+    if row[1] in shorthand_to_quality:
+        return shorthand_to_quality[row[1]]
+    elif row[0] != 'N' and row[0] != 'X':
+        #some chords just aren't labeled properly, but I think they're major chords.
+        return 'maj'
+    else:
+        return np.nan
 
     #return inversion type, ignoring any past 5/3
     def simplify_inversion(row):
@@ -97,7 +98,7 @@ def chord_simplify(df):
             return interval_to_add[interval]
     
     df['root'] = m.apply(lambda x: get_root(x),axis=1)
-    df['quality'] = m.apply(lambda x: g_quality(x),axis=1)
+    df['quality'] = m.apply(lambda x: get_quality(x),axis=1)
     df['add'] = m.apply(lambda x: get_add(x),axis=1)
     df['inversion'] = m.apply(lambda x: simplify_inversion(x),axis=1)
 
