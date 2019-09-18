@@ -110,7 +110,7 @@ def get_features_labels(song_list,block_length,minfreq,num_octaves,bins_per_note
     transposition - True if you want to duplicate and transpose data"""
     block_length = get_true_block(block_length,minfreq,num_octaves,bins_per_note)
     
-    all_features = np.ndarray((0,(12*num_octaves+11)*bins_per_note+2))
+    all_features = np.ndarray((0,(12*num_octaves+11)*bins_per_note+1))
     all_labels = pd.DataFrame()
     for i, row in song_list.iterrows():
         if row.dataset == 'isophonics/The Beatles':
@@ -177,7 +177,8 @@ def get_true_block(block_length,minfreq,num_octaves,bins_per_note):
     "Returns the true block_length, given desired block_length"""
     maxfreq = minfreq*(2**num_octaves)
     sr = 4*maxfreq
-    hop_length = round(block_length*sr/64)*64
+    hop_restriction = 2**(num_octaves-1)
+    hop_length = round(block_length*sr/hop_restriction)*hop_restriction
     true_block = hop_length/sr
     return true_block
     
@@ -187,14 +188,15 @@ def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note):
     #calculate constants
     maxfreq = minfreq*(2**num_octaves)
     sr = 4*maxfreq
-    hop_length = round(block_length*sr/64)*64
+    hop_restriction = 2**(num_octaves-1)
+    hop_length = round(block_length*sr/hop_restriction)*hop_restriction
     #load wave
     wav,sr_ = librosa.load(filepath,sr=sr)
     #apply cqt
     cqt_options = {'sr':sr,
                'hop_length':hop_length,
                'fmin':minfreq,
-               'n_bins':num_octaves*bins_per_note*12+1,
+               'n_bins':num_octaves*bins_per_note*12,
                'bins_per_octave':bins_per_note*12}
     spec = librosa.cqt(wav, **cqt_options)
     #convert to features
