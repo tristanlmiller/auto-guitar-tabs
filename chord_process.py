@@ -77,8 +77,9 @@ def main():
     
     #load directory and split into train, validation, and test sets
     song_directory = pd.read_csv('song_directory.csv')
+    valid_directory = song_directory.loc[~pd.isna(song_directory['mp3_filepath'])]
     np.random.seed(35402374)
-    temp_set, test_set = train_test_split(valid_rows,shuffle=True,train_size = 0.8)
+    temp_set, test_set = train_test_split(valid_directory,shuffle=True,train_size = 0.8)
     train_set, valid_set = train_test_split(temp_set,shuffle=True,train_size = 0.75)
     
     #process data
