@@ -33,7 +33,7 @@ import pandas as pd
 import numpy as np
 import sys, os
 import sklearn
-from sklearn.linear_model import LogisticRegression
+#from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
 def main():
@@ -91,12 +91,12 @@ def main():
                                                                     num_octaves,bins_per_note,False)
     
     #save files
-    np.save(f'Data/processed/{destination}_ftrain.npy',features_train)
-    np.save(f'Data/processed/{destination}_ltrain.npy',labels_train)
-    np.save(f'Data/processed/{destination}_fvalid.npy',features_valid)
-    np.save(f'Data/processed/{destination}_lvalid.npy',labels_valid)
-    np.save(f'Data/processed/{destination}_ftest.npy',features_test)
-    np.save(f'Data/processed/{destination}_ltest.npy',labels_test)
+    np.save(f'{target_dir}{destination}_ftrain.npy',features_train)
+    np.save(f'{target_dir}{destination}_ltrain.npy',labels_train)
+    np.save(f'{target_dir}{destination}_fvalid.npy',features_valid)
+    np.save(f'{target_dir}{destination}_lvalid.npy',labels_valid)
+    np.save(f'{target_dir}{destination}_ftest.npy',features_test)
+    np.save(f'{target_dir}{destination}_ltest.npy',labels_test)
     
     if standard:
         standard_features_train, standard_labels_train = chord_loader.standardize_root(features_train,labels_train,
@@ -105,11 +105,11 @@ def main():
                                                                                        bins_per_note)
         standard_features_test, standard_labels_test = chord_loader.standardize_root(features_test,labels_test,
                                                                                        bins_per_note)
-        np.save(f'Data/processed/{destination}_fstrain.npy',standard_features_train)
-        np.save(f'Data/processed/{destination}_lstrain.npy',standard_labels_train)
-        np.save(f'Data/processed/{destination}_fsvalid.npy',standard_features_valid)
+        np.save(f'{target_dir}{destination}_fstrain.npy',standard_features_train)
+        np.save(f'{target_dir}{destination}_lstrain.npy',standard_labels_train)
+        np.save(f'{target_dir}{destination}_fsvalid.npy',standard_features_valid)
         #np.save(f'Data/processed/{destination}_lsvalid.npy',standard_labels_valid)
-        np.save(f'Data/processed/{destination}_fstest.npy',standard_features_test)
+        np.save(f'{target_dir}{destination}_fstest.npy',standard_features_test)
         #np.save(f'Data/processed/{destination}_lstest.npy',standard_labels_test)
     
     #generate directory file if it doesn't already exist.

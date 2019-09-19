@@ -251,10 +251,10 @@ def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note):
     #convert to features
     db = librosa.amplitude_to_db(np.abs(spec)).T
     db_mean = np.mean(db)
-    db_var = np.var(db)
+    db_std = np.std(db)
     #features is padded out by one row, one column, plus column-space for transposition
     features = np.zeros((db.shape[0]+1,11*bins_per_note+db.shape[1]+1))
-    features[1:,(5*bins_per_note+1):-(6*bins_per_note)] = (db - db_mean ) / db_var
+    features[1:,(5*bins_per_note+1):-(6*bins_per_note)] = (db - db_mean ) / db_std
     #very first column/row is a flag for start of song
     features[0,0] = 1
     return features
