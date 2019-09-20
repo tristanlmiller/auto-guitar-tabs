@@ -64,13 +64,13 @@ def main():
     
     #create logistic regression models
     root_model = LogisticRegression(class_weight=weight,multi_class='ovr',
-                                                solver='lbfgs', max_iter=200)
+                                                solver='lbfgs', max_iter=1000)
     quality_model = LogisticRegression(class_weight=weight,multi_class='ovr',
-                                                solver='lbfgs', max_iter=200)
+                                                solver='lbfgs', max_iter=1000)
     add_model = LogisticRegression(class_weight=weight,multi_class='ovr',
-                                                solver='lbfgs', max_iter=200)
+                                                solver='lbfgs', max_iter=1000)
     inv_model = LogisticRegression(class_weight=weight,multi_class='ovr',
-                                                solver='lbfgs', max_iter=200)
+                                                solver='lbfgs', max_iter=1000)
     
     #load training data
     features_train = np.load(f'Data/processed/{source}_ftrain.npy')

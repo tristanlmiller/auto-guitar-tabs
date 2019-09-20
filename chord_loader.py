@@ -33,7 +33,7 @@ num_to_quality = {0:'unison',1:'power',2:'maj',3:'min',4:'sus',5:'dim',6:'aug'}
 #shorthand -> added interval, standardized
 shorthand_to_add = {'1':'',
                     '5':'',
-                    'maj':'','min':'','dim':'','aug':'','sus4':'',#'sus2':'',
+                    'maj':'','min':'','dim':'','aug':'','sus4':'','sus2':'',
                     '7':'7','min7':'7','maj7':'maj7','hdim7':'7','dim7':'6','minmaj7':'maj7',
                     'maj6':'6','min6':'6',
                     'min9':'9','maj9':'9','9':'9',
@@ -98,24 +98,31 @@ def simplify_inversion(row):
 
 #return added interval in int format
 def get_add(row):
-    if row[1] not in shorthand_to_add:
-        #if there's no valid shorthand (i.e. N or X chord)
-        return np.nan
-    out = shorthand_to_add[row[1]]
-    if out:
-        #if the shorthand implies an add
-        return add_to_num[out]
-    elif not row[2]:
-        #if shorthand does not imply add, and none is available
-        return add_to_num['']
-    #if shorthand implies no add, but an add is given
-    interval = str(row[2]).split(',')[-1]
-    if interval not in interval_to_add:
-        #if the given add isn't one of the ones I care about (e.g. 5)
-        return add_to_num['']
+    if (row[0] != 'N') and (row[0] != 'X'):
+        #valid chord
+        if row[1] == 'sus2':
+            #ignore sus2 chords, since it's too much of a pain to compute adds
+            return add_to_num['']
+        if row[1] in shorthand_to_add:
+            out = shorthand_to_add[row[1]]
+            if out:
+                #if the shorthand implies an add, use that one
+                return add_to_num[out]
+        #otherwise look for add in add column
+        if not row[2]:
+            #if no add is noted, there is no add
+            return add_to_num['']
+        #if adds are noted, check last one
+        interval = str(row[2]).split(',')[-1]
+        if interval not in interval_to_add:
+            #if the given add isn't one of the ones I care about (e.g. 5)
+            return add_to_num['']
+        else:
+            #if the given add is one I care about
+            return add_to_num[interval_to_add[interval]]
     else:
-        #if the given add is one I care about
-        return add_to_num[interval_to_add[interval]]
+        #no valid chord means no add
+        return add_to_num['']
 
 ############################################################
 #Functions for loading and processing files
