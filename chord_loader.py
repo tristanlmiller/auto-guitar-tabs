@@ -196,12 +196,12 @@ def standardize_root(features,labels,bins_per_note,dropna=True,transposed=False)
     duplicate_features = np.zeros((og_size,num_features))
     duplicate_features[:,0] = features[:og_size,0]
     for j,i in enumerate(labels[:og_size,0]):
-        i = -int(i)
+        i = int(i)
         if i > 0 and i <= 6:
-            duplicate_features[j,(1+i*bins_per_note):] = features[j,1:(-i*bins_per_note)]
+            duplicate_features[j,1:(-i*bins_per_note)] = features[j,(1+i*bins_per_note):]
         elif i > 6:
             i -= 12
-            duplicate_features[j,1:(i*bins_per_note)] = features[j,(1-i*bins_per_note):]
+            duplicate_features[j,(1-i*bins_per_note):] = features[j,1:(i*bins_per_note)]
         elif i == 0:
             duplicate_features[j,:] = features[j,:]
     if dropna:
@@ -297,4 +297,17 @@ def chord_simplify(chords):
     
     return out
 
-
+def read_chords(labels):
+    output = []
+    for i in range(labels.shape[0]):
+        chord_str = ''
+        if labels[i,0] in num_to_root:
+            chord_str += num_to_root[labels[i,0]] + ' '
+        if labels[i,1] in num_to_quality:
+            chord_str += num_to_quality[labels[i,1]]
+        if labels[i,2] in num_to_add:
+            chord_str += num_to_add[labels[i,2]]
+        if labels[i,3] in num_to_inv:
+            chord_str += num_to_inv[labels[i,3]]
+        output.append(chord_str)
+    return output
