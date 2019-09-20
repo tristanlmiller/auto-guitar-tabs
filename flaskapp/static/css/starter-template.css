@@ -9,9 +9,10 @@ body {
 
 div.scrollable
 {
-  width:500px;
+  width:1000px;
   height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: scroll;
+  display:block;
 }

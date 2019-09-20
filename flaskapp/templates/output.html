@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <link rel="icon" href="/docs/4.1/assets/img/favicons/favicon.ico">
 
-    <title>Automatic Chords</title>
+    <title>Chord Identifier</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/4.1/examples/starter-template/">
 
@@ -59,14 +59,56 @@
     <div class="container">
 
       <div class="starter-template">
-          <h2>Automatic Chords</h2>
+          <h2>Chord Identifier</h2>
       </div>
+    </div>
+
+    <div>
+      <center>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ video }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </center>
+    </dif>
+
+    </div>
+    <!-- /.container -->
+    <div class="container">
+      <div class="starter-template">
+        <h3>Results:</h3>
+      </div>
+
+    <!--vertical table-->
+    <!--<table class="table table-hover" class=scrollable>
+      <tr><th>Time</th><th>Chord</th></tr>
+      {% for row in predictions %}
+      <tr><td>{{ row['time'] }}</td><td>{{ row['chord']}}</td></tr>
+      {% endfor %}
+    </table>-->
+
+    <!--Horizontal table-->
+    <div class=scrollable>
+      <table class="table table-hover">
+
+
+        <tr><th>Time</th>
+          {% for row in predictions %}
+            <td>{{ row['time']}}</td>
+          {% endfor %}
+        </tr>
+
+        <tr><th>Chord</th>
+          {% for row in predictions %}
+            <td>{{ row['chord'] }}</td>
+          {% endfor %}
+        </tr>
+      </table>
+
+    </div>
 
       <div class = "container">
 
         <form action="/output" method="GET">
           <div class="form-group">
-            <label for="youtube_url">Enter a link to a Youtube video</label>
+            <label for="youtube_url">Another one?</label>
             <input type="text" id="youtube_url" name='youtube_url' placeholder="url here">
           </div>
 
@@ -78,16 +120,14 @@
       </div>
 
 
-    </div>
-    <!-- /.container -->
-
+     </div><!-- /.container -->
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <!--<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
-    <script src="../../assets/js/vendor/popper.min.js"></script>-->
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="../../assets/js/vendor/popper.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
   </body>
 </html>
