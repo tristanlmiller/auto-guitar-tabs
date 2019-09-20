@@ -33,6 +33,7 @@ import traceback
 def main():
     
     args = sys.argv[1:]
+    args.append['']
     
     if not args:
         print('usage: link model destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note]')

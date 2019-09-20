@@ -42,6 +42,7 @@ from sklearn.model_selection import train_test_split
 def main():
     
     args = sys.argv[1:]
+    args.append['']
     
     if not args:
         print('usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --transpose --standard] --frac fraction')

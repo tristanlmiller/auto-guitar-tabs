@@ -27,6 +27,7 @@ import pickle
 def main():
     
     args = sys.argv[1:]
+    args.append['']
     
     if not args:
         print('usage: source destination [--weighted --frac fraction]')
