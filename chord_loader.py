@@ -67,8 +67,10 @@ num_to_inv = {0:'',1:'/5',2:'/3'}
 def get_root(row):
     if row[1] == 'sus2':
         return (root_to_num[row[0]] + 7) % 12
-    else:
+    elif row[0] in root_to_num:
         return root_to_num[row[0]]
+    else:
+        return np.nan
 
 #returns quality in int format
 def get_quality(row):
