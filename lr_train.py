@@ -110,12 +110,12 @@ def main():
     
     #generate directory file if it doesn't already exist.
     if not os.path.exists(target_dir + 'lr_directory.csv'):
-        header = 'sourcepath, filepath, weighted, fraction'
+        header = 'sourcepath,filepath,weighted,fraction'
         with open(target_dir + 'directory.csv','a') as f:
             f.write(header)
     
     #record settings in file
-    newrow = f"\n{source}, {destination}, {weight}, {fraction}"
+    newrow = f"\n{source},{destination},{weight},{fraction}"
     with open(target_dir + 'lr_directory.csv','a') as f:
         f.write(newrow)
 
