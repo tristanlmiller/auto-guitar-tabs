@@ -1,0 +1,17 @@
+body {
+  padding-top: 50px;
+}
+
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+div.scrollable
+{
+  width:500px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: scroll;
+}

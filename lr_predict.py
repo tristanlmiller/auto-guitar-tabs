@@ -69,9 +69,13 @@ def main():
     if args[0] == '--frac':
         fraction = float(args[1])
         del args[0:2]
-    
+    predict(link, model_filename, destination, block_length, minfreq, num_octaves, bins_per_note, model_dir, target_dir)
+
+def predict(link, model_filename, destination, block_length, minfreq, num_octaves, bins_per_note, model_dir, target_dir):
+    if os.path.exists(f'{target_dir}{destination}.pkl'):
+        return None
     #load music
-    download_mp3('https://www.youtube.com/watch?v=a__Y4dlP8eo','Data/temp.mp3')
+    download_mp3(link,'Data/temp.mp3')
     song_features = chord_loader.get_features("Data/temp.mp3",block_length,minfreq,num_octaves,bins_per_note)
     os.remove('Data/temp.mp3')
         
