@@ -82,12 +82,13 @@ def main():
     #select fraction of training songs
     if fraction < 1:
         if curr_data_info['transpose']:
-            kept_rows = np.tile(np.arange(labels_train.shape[0]) <= labels_train.shape[0]*fraction,12)
+            kept_rows = np.tile(np.arange(labels_train.shape[0]/12) <= labels_train.shape[0]*fraction/12,12)
         else:
             kept_rows = np.arange(labels_train.shape[0]) <= labels_train.shape[0]*fraction
         features_train = features_train[kept_rows,:]
         labels_train = labels_train[kept_rows,:]
         if curr_data_info['standard']:
+            kept_rows = np.arange(standard_labels_train.shape[0]) <= standard_labels_train.shape[0]*fraction
             standard_features_train = standard_features_train[kept_rows,:]
             standard_labels_train = standard_labels_train[kept_rows,:]
     
@@ -111,7 +112,7 @@ def main():
     #generate directory file if it doesn't already exist.
     if not os.path.exists(target_dir + 'lr_directory.csv'):
         header = 'sourcepath,filepath,weighted,fraction'
-        with open(target_dir + 'directory.csv','a') as f:
+        with open(target_dir + 'lr_directory.csv','a') as f:
             f.write(header)
     
     #record settings in file

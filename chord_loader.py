@@ -52,7 +52,7 @@ interval_to_add = {'7':'maj7',
 #added interval -> number class
 add_to_num = {'':0,'maj7':1,'7':2,'9':3,'min9':4,'4':5,'tt':6,'6':7,'min6':8}
 #number class -> added interval, standardized
-num_to_add = {0:'',1:'maj7',2:'7',3:'add 9',4:'add m9',5:'add 4',6:'add tt',7:'add 6',8:'add m6'}
+num_to_add = {0:'',1:'add maj7',2:'add min7',3:'add 9',4:'add m9',5:'add 4',6:'add tt',7:'add 6',8:'add m6'}
 
 #inversion -> number class
 inv_to_num = {'':0,'5':1,'3':2}
@@ -309,12 +309,12 @@ def read_chords(labels):
     for i in range(labels.shape[0]):
         chord_str = ''
         if labels[i,0] in num_to_root:
-            chord_str += num_to_root[labels[i,0]] + ' '
+            chord_str += num_to_root[labels[i,0]]
         if labels[i,1] in num_to_quality:
             chord_str += num_to_quality[labels[i,1]]
         if labels[i,2] in num_to_add:
-            chord_str += num_to_add[labels[i,2]]
+            chord_str += ' ' + num_to_add[labels[i,2]]
         if labels[i,3] in num_to_inv:
             chord_str += num_to_inv[labels[i,3]]
-        output.append(chord_str)
+        output.append(chord_str.strip())
     return output

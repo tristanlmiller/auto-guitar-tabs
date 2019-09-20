@@ -72,7 +72,7 @@ def main():
     
     #load music
     download_mp3('https://www.youtube.com/watch?v=a__Y4dlP8eo','Data/temp.mp3')
-    song_features = chord_loader.get_features("temp.mp3",block_length,minfreq,num_octaves,bins_per_note)
+    song_features = chord_loader.get_features("Data/temp.mp3",block_length,minfreq,num_octaves,bins_per_note)
     os.remove('Data/temp.mp3')
         
     #load models from pickles
@@ -89,7 +89,7 @@ def main():
     
     #standardize the root
     standard_song_features, standard_song_labels = chord_loader.standardize_root(
-        song_features,song_labels,1)
+        song_features,song_labels,bins_per_note)
     
     #predict the rest of the chord
     quality_labels = quality_model.predict(standard_song_features)
