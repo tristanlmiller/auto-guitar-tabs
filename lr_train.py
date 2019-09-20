@@ -114,7 +114,7 @@ def main():
             f.write(header)
     
     #record settings in file
-    newrow = f"{source}, {destination}, {weight}, {fraction}"
+    newrow = f"\n{source}, {destination}, {weight}, {fraction}"
     with open(target_dir + 'lr_directory.csv','a') as f:
         f.write(newrow)
 

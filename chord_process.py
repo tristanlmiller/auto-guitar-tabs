@@ -130,12 +130,12 @@ def main():
     #generate directory file if it doesn't already exist.
     print('Recording settings')
     if not os.path.exists(target_dir + 'directory.csv'):
-        header = 'filepath, block_length, minfreq, num_octaves, bins_per_note, transpose, standard'
+        header = 'filepath, block_length, minfreq, num_octaves, bins_per_note, transpose, standard, fraction'
         with open(target_dir + 'directory.csv','a') as f:
             f.write(header)
     
     #record settings in file
-    newrow = f"{destination}, {block_length}, {minfreq}, {num_octaves}, {bins_per_note}, {transpose}, {standard}"
+    newrow = f"\n{destination}, {block_length}, {minfreq}, {num_octaves}, {bins_per_note}, {transpose}, {standard}, {fraction}"
     with open(target_dir + 'directory.csv','a') as f:
         f.write(newrow)
 
