@@ -48,4 +48,6 @@ def chord_output():
             predictions.append(dict(time=f"{int(i/2/60):.0f}:{(i/2 % 60):02.0f}", chord=result))
         else:
             predictions.append(dict(time="", chord=result))
+        #if i >= 5:
+            #break
     return render_template("output.html", predictions = predictions, video = video_code)
