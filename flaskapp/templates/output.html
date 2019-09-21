@@ -54,6 +54,13 @@
     </nav>
   -->
     <br><br>
+    <script>
+    console.log("successfully loaded the code");
+    document.playNotes = function(e) {
+      e.preventDefault();
+      console.log("playing notes");
+    };
+    </script>
 
     <!--main body-->
     <div class="container">
@@ -89,7 +96,7 @@
 
         <tr><th>Chord</th>
           {% for row in predictions %}
-            <td>{{ row['chord'] }}</td>
+            <td style="background-color:#FFFFDD">{{ row['chord'] }}</td>
           {% endfor %}
         </tr>
       </table>
@@ -110,6 +117,7 @@
 
         </form>
       </div>
+      <button id="tone" data-notes='C3 E4 G4'>play a tone?</button>
 
 
      </div><!-- /.container -->
@@ -121,5 +129,17 @@
     <!--<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
     <script src="../../assets/js/vendor/popper.min.js"></script>-->
     <script src="static/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.0.1/Tone.min.js"></script>
+    <script>
+
+    var synth = new Tone.PolySynth(5).toMaster()
+
+    document.querySelector('#tone').addEventListener('click', (e) => {
+      var note_list = e.target.getAttribute("data-notes").split(' ')
+       for (note of note_list) {
+        synth.triggerAttackRelease(note_list, '0.25')
+       }
+    });
+    </script>
   </body>
 </html>
