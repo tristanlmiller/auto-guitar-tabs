@@ -3,15 +3,39 @@ body {
 }
 
 .starter-template {
-  padding: 40px 15px;
+  padding: 20px 15px;
   text-align: center;
 }
 
-div.scrollable
+table.scrollable
 {
+  width: 75%;
   height: 100%;
-  margin: 0;
-  padding: 0; 
   overflow-x: scroll;
-  display:block;
+  display:inline-block;
+}
+
+table.leftbar
+{
+  height:100%;
+  width:15%;
+  display:inline-block;
+}
+
+table.fix-height tr
+{
+  height:80px;
+}
+
+iframe.video-embed
+{
+  height:180px;
+  width:320px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+div.width-override
+{
+  max-width:90%
 }

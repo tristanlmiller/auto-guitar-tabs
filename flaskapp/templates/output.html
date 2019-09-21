@@ -19,108 +19,57 @@
   </head>
 
   <body>
-    <!--
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#">Navbar</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#">Disabled</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="https://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-            <div class="dropdown-menu" aria-labelledby="dropdown01">
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Another action</a>
-              <a class="dropdown-item" href="#">Something else here</a>
-            </div>
-          </li>
-        </ul>
-        <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
-      </div>
-    </nav>
-  -->
-    <br><br>
-    <script>
-    console.log("successfully loaded the code");
-    document.playNotes = function(e) {
-      e.preventDefault();
-      console.log("playing notes");
-    };
-    </script>
 
     <!--main body-->
-    <div class="container">
-
-      <div class="starter-template">
-          <h2>Chord Identifier</h2>
-      </div>
+    <div class="container starter-template">
+          <h1>Chord Identifier</h1>
     </div>
 
-    <div>
-      <center>
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ video }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      </center>
-    </dif>
-
+    <div class="container starter-template">
+        <iframe class="video-embed" src="https://www.youtube.com/embed/{{ video }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
-    <!-- /.container -->
-    <div class="container">
-      <div class="starter-template">
-        <h3>Results:</h3>
-      </div>
 
     <!--Horizontal table-->
-    <div class="scrollable container-fluid">
-      <table class="table table-hover">
+    <div class="container width-override">
+      <table class="table leftbar fix-height">
+        <tr><th>Time</th></tr>
+        <tr><th>Chord</th></tr>
+      </table>
+      <table class="table scrollable fix-height">
 
-
-        <tr><th>Time</th>
+        <tr>
           {% for row in predictions %}
             <td>{{ row['time'] }}</td>
           {% endfor %}
         </tr>
 
-        <tr><th>Chord</th>
+        <tr>
           {% for row in predictions %}
             <td style="background-color:#FFFFDD">{{ row['chord'] }}</td>
           {% endfor %}
         </tr>
       </table>
-
     </div>
 
-      <div class = "container">
+     <div class = "container starter-template">
 
-        <form action="/output" method="GET">
-          <div class="form-group">
-            <label for="youtube_url">Another one?</label>
-            <input type="text" id="youtube_url" name='youtube_url' placeholder="url here">
-          </div>
+       <form action="/output" method="GET">
+         <div class="form-group">
+           <label for="youtube_url">Another one?</label>
+           <input type="text" id="youtube_url" name='youtube_url' placeholder="url here">
+         </div>
 
-          <div>
-            <button type="submit" class="btn btn-default btn-lg">Get the chords</button>
-          </div>
+         <div>
+           <button type="submit" class="btn btn-default btn-lg">Get the chords</button>
+         </div>
 
-        </form>
+       </form>
+     </div>
+     </div>
+
+     <div>
+       <button id="tone" data-notes='C3 E4 G4'>play a tone?</button>
       </div>
-      <button id="tone" data-notes='C3 E4 G4'>play a tone?</button>
-
-
-     </div><!-- /.container -->
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
