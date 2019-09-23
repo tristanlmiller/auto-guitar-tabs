@@ -25,7 +25,8 @@ con = psycopg2.connect(database = dbname, user = user, host = host, password = '
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template("input.html")
+    url = request.args.get('youtube_url')
+    return render_template("input.html", preset_url=url)
 
 @app.route('/output')
 def chord_output():

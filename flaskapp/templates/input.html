@@ -66,8 +66,9 @@
 
         <form action="/output" method="GET">
           <div class="form-group">
-            <label for="youtube_url">Enter a link to a Youtube video</label>
-            <input type="text" id="youtube_url" name='youtube_url' placeholder="url here">
+            <label for="youtube_url">Enter a link to a Youtube video </label>
+            <input type="text" id="youtube_url" name='youtube_url'
+              placeholder="url here" value="{{ preset_url if preset_url else '' }}">
           </div>
 
           <div>
