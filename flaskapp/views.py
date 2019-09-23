@@ -36,18 +36,13 @@ def chord_output():
                         'Models/', 'Results/')
 
     results = pickle.load(open(f"Results/{video_code}.pkl", 'rb'))
+    results['time'] = ['' if i % 2 == 0 else
+        f"{int(i/2/60):.0f}:{(i/2 % 60):02.0f}" for i in range(results.shape[0])]
 
-    predictions = []
-    last_chord = '~'
-    for i,result in enumerate(results):
-        if result != last_chord:
-            last_chord = result
-        else:
-            result = ''
-        if i % 2 == 0:
-            predictions.append(dict(time=f"{int(i/2/60):.0f}:{(i/2 % 60):02.0f}", chord=result))
-        else:
-            predictions.append(dict(time="", chord=result))
-        #if i >= 5:
-            #break
-    return render_template("output.html", predictions = predictions, video = video_code)
+    nochange = results['full'] == results['full'].shift(1)
+    results['root'].loc[nochange] = ''
+    results['quality'].loc[nochange] = ''
+    results['interval'].loc[nochange] = ''
+    results['inv'].loc[nochange] = ''
+
+    return render_template("output.html", predictions = results, video = video_code)

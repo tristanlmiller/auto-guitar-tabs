@@ -33,19 +33,41 @@
     <div class="container width-override">
       <table class="table leftbar fix-height">
         <tr><th>Time</th></tr>
-        <tr><th>Chord</th></tr>
+        <tr><th>Root</th></tr>
+        <tr><th>Quality</th></tr>
+        <tr><th>Added interval</th></tr>
+        <tr><th>Inversion</th></tr>
+        <tr><th>Notes</th></tr>
       </table>
       <table class="table scrollable fix-height">
-
         <tr>
-          {% for row in predictions %}
+          {% for i,row in predictions.iterrows() %}
             <td>{{ row['time'] }}</td>
           {% endfor %}
         </tr>
-
         <tr>
-          {% for row in predictions %}
-            <td style="background-color:#FFFFDD">{{ row['chord'] }}</td>
+          {% for i,row in predictions.iterrows() %}
+            <td style="background-color:#FFFFDD">{{ row['root'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td>{{ row['quality'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td>{{ row['interval'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td>{{ row['inv'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td><button id="tone" data-notes="{{ row['notes'] }}">play</button></td>
           {% endfor %}
         </tr>
       </table>
@@ -68,8 +90,11 @@
      </div>
 
      <div>
-       <button id="tone" data-notes='C3 E4 G4'>play a tone?</button>
+       <button id="tone" data-notes='C3 F4 E5'>play a tone?</button>
       </div>
+    <div>
+      <button id="tone" data-notes='C3'>play a tone?</button>
+     </div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

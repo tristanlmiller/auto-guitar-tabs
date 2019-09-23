@@ -52,7 +52,7 @@ interval_to_add = {'7':'maj7',
 #added interval -> number class
 add_to_num = {'':0,'maj7':1,'7':2,'9':3,'min9':4,'4':5,'tt':6,'6':7,'min6':8}
 #number class -> added interval, standardized
-num_to_add = {0:'',1:'add maj7',2:'add min7',3:'add 9',4:'add m9',5:'add 4',6:'add tt',7:'add 6',8:'add m6'}
+num_to_add = {0:'',1:'maj7',2:'min7',3:'9',4:'min9',5:'4',6:'tt',7:'6',8:'min6'}
 
 #inversion -> number class
 inv_to_num = {'':0,'5':1,'3':2}
@@ -307,16 +307,84 @@ def chord_simplify(chords):
     return out
 
 def read_chords(labels):
-    output = []
-    for i in range(labels.shape[0]):
-        chord_str = ''
-        if labels[i,0] in num_to_root:
-            chord_str += num_to_root[labels[i,0]]
-        if labels[i,1] in num_to_quality:
-            chord_str += num_to_quality[labels[i,1]]
-        if labels[i,2] in num_to_add:
-            chord_str += ' ' + num_to_add[labels[i,2]]
-        if labels[i,3] in num_to_inv:
-            chord_str += num_to_inv[labels[i,3]]
-        output.append(chord_str.strip())
-    return output
+    '''Given a set of model predictions, produces a DataFrame with additional columns for display by the app.
+    '''
+    chord_info = pd.DataFrame({'rootnum':labels[:,0],'qualitynum':labels[:,1],
+                               'addnum':labels[:,2],'invnum':labels[:,3]})
+    
+    chord_info = chord_info.fillna(value=0)
+    
+    chord_info['root'] = [num_to_root[x] for x in chord_info['rootnum']]
+    chord_info['quality'] = [num_to_quality[x] for x in chord_info['qualitynum']]
+    chord_info['interval'] = [num_to_add[x] for x in chord_info['addnum']]
+    chord_info['inv'] = [num_to_inv[x] for x in chord_info['invnum']]
+    chord_info['full'] = [row.root+row.quality+row.interval+row.inv for i,row in chord_info.iterrows()]
+    
+    #hard part: producing the list of notes
+    chord_info['notes'] = ''
+    bass_octave = '4'
+    triad_octave = '5'
+    add_octave = '6'
+    for i,row in chord_info.iterrows():
+        if row.root == '~':
+            continue
+        notes = ''
+        #get bass note
+        if row.inv == '':
+            notes += num_to_root[row.rootnum] + bass_octave
+        elif row.inv == '/5':
+            if row.quality  == 'aug':
+                notes += num_to_root[(row.rootnum+8) % 12] + bass_octave
+            elif row.quality == 'dim':
+                notes += num_to_root[(row.rootnum+6) % 12] + bass_octave
+            else:
+                notes += num_to_root[(row.rootnum+7) % 12] + bass_octave
+        elif row.inv == '/3':
+            if row.quality in ['min','dim']:
+                notes += num_to_root[(row.rootnum+3) % 12] + bass_octave
+            else:
+                notes += num_to_root[(row.rootnum+4) % 12] + bass_octave
+        
+        #get basic triad
+        if row.quality == 'maj':
+            notes += ' ' + num_to_root[(row.rootnum+4) % 12] + triad_octave
+            notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+        elif row.quality == 'min':
+            notes += ' ' + num_to_root[(row.rootnum+3) % 12] + triad_octave
+            notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+        elif row.quality == 'power':
+            notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+        elif row.quality == 'dim':
+            notes += ' ' + num_to_root[(row.rootnum+3) % 12] + triad_octave
+            notes += ' ' + num_to_root[(row.rootnum+6) % 12] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+        elif row.quality == 'aug':
+            notes += ' ' + num_to_root[(row.rootnum+4) % 12] + triad_octave
+            notes += ' ' + num_to_root[(row.rootnum+8) % 12] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+        else: #unison case
+            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            
+        #get add
+        if row.interval == 'maj7':
+            notes += ' ' + num_to_root[(row.rootnum+11) % 12] + add_octave
+        elif row.interval == 'min7':
+            notes += ' ' + num_to_root[(row.rootnum+10) % 12] + add_octave
+        elif row.interval == '6':
+            notes += ' ' + num_to_root[(row.rootnum+9) % 12] + add_octave
+        elif row.interval == 'min6':
+            notes += ' ' + num_to_root[(row.rootnum+8) % 12] + add_octave
+        elif row.interval == '9':
+            notes += ' ' + num_to_root[(row.rootnum+2) % 12] + add_octave
+        elif row.interval == 'min9':
+            notes += ' ' + num_to_root[(row.rootnum+1) % 12] + add_octave
+        elif row.interval == '4':
+            notes += ' ' + num_to_root[(row.rootnum+5) % 12] + add_octave
+        elif row.interval == 'tt':
+            notes += ' ' + num_to_root[(row.rootnum+6) % 12] + add_octave
+        chord_info['notes'].iloc[i] = notes
+        
+    return chord_info

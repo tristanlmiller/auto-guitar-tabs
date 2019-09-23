@@ -104,7 +104,7 @@ def predict(link, model_filename, destination, block_length, minfreq, num_octave
     song_labels[~np.equal(song_labels[:,0],-1),2] = add_labels
     song_labels[~np.equal(song_labels[:,0],-1),3] = inv_labels
 
-    chord_symbols = chord_loader.read_chords(song_labels)
+    chord_symbols = chord_loader.read_chords(song_labels[1:,:])
     
     #save file
     pickle.dump(chord_symbols, open(f'{target_dir}{destination}.pkl', 'wb'))
