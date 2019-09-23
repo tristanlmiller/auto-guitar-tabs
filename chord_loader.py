@@ -26,9 +26,9 @@ shorthand_to_quality = {'1':'unison',
                         '11':'maj','min11':'min','13':'maj','maj13':'maj','min13':'min'}
 
 #chord quality -> number class
-quality_to_num = {'unison':0,'power':1,'maj':2,'min':3,'sus':4,'dim':5,'aug':6}
+quality_to_num = {'':0,'unison':7,'power':1,'maj':2,'min':3,'sus':4,'dim':5,'aug':6}
 #number class -> chord quality
-num_to_quality = {0:'unison',1:'power',2:'maj',3:'min',4:'sus',5:'dim',6:'aug'}
+num_to_quality = {0:'',1:'power',2:'maj',3:'min',4:'sus',5:'dim',6:'aug',7:'unison'}
 
 #shorthand -> added interval, standardized
 shorthand_to_add = {'1':'',

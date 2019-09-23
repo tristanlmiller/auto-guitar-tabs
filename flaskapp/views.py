@@ -37,7 +37,7 @@ def chord_output():
                         'Models/', 'Results/')
 
     results = pickle.load(open(f"Results/{video_code}.pkl", 'rb'))
-    results['time'] = ['' if i % 2 == 0 else
+    results['time'] = ['' if i % 2 == 1 else
         f"{int(i/2/60):.0f}:{(i/2 % 60):02.0f}" for i in range(results.shape[0])]
 
     nochange = results['full'] == results['full'].shift(1)

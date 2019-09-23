@@ -20,11 +20,12 @@ table.leftbar
   height:100%;
   width:15%;
   display:inline-block;
+  padding-bottom:20px;
 }
 
 table.fix-height tr
 {
-  height:80px;
+  height:40px;
 }
 
 iframe.video-embed
@@ -37,5 +38,5 @@ iframe.video-embed
 
 div.width-override
 {
-  max-width:90%
+  max-width:90%;
 }

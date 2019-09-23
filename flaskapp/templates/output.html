@@ -35,10 +35,11 @@
         <tr><th>Time</th></tr>
         <tr><th>Root</th></tr>
         <tr><th>Quality</th></tr>
-        <tr><th>Added interval</th></tr>
+        <tr><th>Add</th></tr>
         <tr><th>Inversion</th></tr>
-        <tr><th>Notes</th></tr>
+        <tr><th>Play it!</th></tr>
       </table>
+
       <table class="table scrollable fix-height">
         <tr>
           {% for i,row in predictions.iterrows() %}
@@ -47,7 +48,7 @@
         </tr>
         <tr>
           {% for i,row in predictions.iterrows() %}
-            <td style="background-color:#FFFFDD">{{ row['root'] }}</td>
+            <td>{{ row['root'] }}</td>
           {% endfor %}
         </tr>
         <tr>
@@ -67,7 +68,7 @@
         </tr>
         <tr>
           {% for i,row in predictions.iterrows() %}
-            <td><button id="tone" data-notes="{{ row['notes'] }}">play</button></td>
+            <td><button id="tone" data-notes="{{ row['notes'] }}">&nbsp;&nbsp;&nbsp;</button></td>
           {% endfor %}
         </tr>
       </table>
@@ -87,13 +88,6 @@
 
        </form>
      </div>
-     </div>
-
-     <div>
-       <button id="tone" data-notes='C3 F4 E5'>play a tone?</button>
-      </div>
-    <div>
-      <button id="tone" data-notes='C3'>play a tone?</button>
      </div>
 
     <!-- Bootstrap core JavaScript
