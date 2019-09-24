@@ -66,6 +66,15 @@ def main():
     train(source, destination, source_dir, target_dir, weight, L2weight, fraction, metrics_only)
     
 def train(source, destination, source_dir, target_dir, weight, L2weight, fraction, metrics_only):
+    
+    #get information from processed data directory
+    data_info = pd.read_csv(source_dir + 'directory.csv')
+    curr_data_info = data_info.loc[data_info['filepath']==source,:]
+    if curr_data_info.shape[0] < 1:
+        print('Source not found in directory')
+        sys.exit(1)
+    curr_data_info = curr_data_info.iloc[-1,:]
+
     #load data
     features_train = np.load(f'{source_dir}{source}_ftrain.npy')
     labels_train = np.load(f'{source_dir}{source}_ltrain.npy')
@@ -95,13 +104,6 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
             standard_labels_train = standard_labels_train[kept_rows,:]
 
     if not metrics_only:
-        #get information from processed data directory
-        data_info = pd.read_csv(source_dir + 'directory.csv')
-        curr_data_info = data_info.loc[data_info['filepath']==source,:]
-        if curr_data_info.shape[0] < 1:
-            print('Source not found in directory')
-            sys.exit(1)
-        curr_data_info = curr_data_info.iloc[-1,:]
 
         #create logistic regression models
         root_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
