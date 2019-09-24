@@ -206,7 +206,7 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     all_predict_train[standard_predict_train,1] = quality_predict_train
     all_predict_train[standard_predict_train,2] = add_predict_train
     all_predict_train[standard_predict_train,3] = inv_predict_train
-    total_acc_train = np.all(all_predict_train == labels_train[notnan_train,:],axis=1)
+    total_acc_train = np.all(all_predict_train == (labels_train[notnan_train,:])[0:all_predict_train.shape[0]],axis=1)
     metrics['total_acc_train'] = sum(total_acc_train)/len(total_acc_train)
     
     all_predict_valid = np.zeros((root_predict_valid.shape[0],4))

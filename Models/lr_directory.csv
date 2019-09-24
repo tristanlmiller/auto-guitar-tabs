@@ -1,0 +1,4 @@
+sourcepath,filepath,weighted,fraction,L2weight
+partial_lr,partial,balanced,1,1.0
+partial_lr,partial,balanced,1,1.0
+partial_lr,partial,balanced,1,1.0
