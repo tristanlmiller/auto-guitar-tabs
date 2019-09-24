@@ -365,6 +365,10 @@ def read_chords(labels):
             notes += ' ' + num_to_root[(row.rootnum+4) % 12] + triad_octave
             notes += ' ' + num_to_root[(row.rootnum+8) % 12] + triad_octave
             notes += ' ' + num_to_root[row.rootnum] + triad_octave
+        elif row.quality == 'sus':
+            notes += ' ' + num_to_root[(row.rootnum+5) % 12] + triad_octave
+            notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + triad_octave
         else: #unison case
             notes += ' ' + num_to_root[row.rootnum] + triad_octave
             

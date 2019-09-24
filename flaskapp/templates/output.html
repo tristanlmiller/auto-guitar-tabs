@@ -68,7 +68,7 @@
         </tr>
         <tr>
           {% for i,row in predictions.iterrows() %}
-            <td><button id="tone" data-notes="{{ row['notes'] }}">&nbsp;&nbsp;&nbsp;</button></td>
+            <td><button class="tone" data-notes="{{ row['notes'] }}">&nbsp;&nbsp;&nbsp;</button></td>
           {% endfor %}
         </tr>
       </table>
@@ -102,12 +102,16 @@
 
     var synth = new Tone.PolySynth(5).toMaster()
 
-    document.querySelector('#tone').addEventListener('click', (e) => {
-      var note_list = e.target.getAttribute("data-notes").split(' ')
-       for (note of note_list) {
-        synth.triggerAttackRelease(note_list, '0.25')
-       }
-    });
+    for (button of document.getElementsByClassName('tone')) {
+      button.addEventListener('click', (e) => {
+        // var note_list = e.target.getAttribute("data-notes").split(' ');
+        //  for (note of note_list) {
+        //   synth.triggerAttackRelease(note, '0.25');
+        //  }
+        var note_list = e.target.getAttribute("data-notes").split(' ');
+          synth.triggerAttackRelease(note_list, '0.25');
+       });
+     }
     </script>
   </body>
 </html>
