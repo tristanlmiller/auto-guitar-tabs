@@ -2,7 +2,7 @@
 '''
 Trains a logistic regression model on processed data, saves model as pickle.
 
-usage: source destination [--weighted --C L2weight --frac fraction]
+usage: source destination [--weighted --C L2weight --frac fraction --metrics]
 
 Options:
 source - prefix of data files used for this model (same as what was provided to chord_process.py)
@@ -15,6 +15,7 @@ Files will be saved with the following suffixes:
 --weighted - if option is selected, then logistic regression is performed with balanced weighting
 --C L2weight - regularization strength input into logistic regression model
 --frac - fraction of training data to use, e.g. if you're making learning curves (Default = 1)
+--metrics - calculates metrics only using pre-existing model
 '''
     
 import chord_loader
@@ -40,6 +41,7 @@ def main():
     source_dir = 'Data/processed/'
     target_dir = 'Models/'
     L2weight = 1.0
+    metrics_only = False
     
     #parse user options
     source = args[0]
@@ -58,28 +60,12 @@ def main():
             print('fraction must be between 0 and 1')
             sys.exit(1)
         del args[0:2]
-    train(source, destination, source_dir, target_dir, weight, L2weight, fraction)
+    if args[0] == '--metrics':
+        metrics_only = True
+        del args[0:1]
+    train(source, destination, source_dir, target_dir, weight, L2weight, fraction, metrics_only)
     
-def train(source, destination, source_dir, target_dir, weight, L2weight, fraction):
-        
-    #get information from processed data directory
-    data_info = pd.read_csv(source_dir + 'directory.csv')
-    curr_data_info = data_info.loc[data_info['filepath']==source,:]
-    if curr_data_info.shape[0] < 1:
-        print('Source not found in directory')
-        sys.exit(1)
-    curr_data_info = curr_data_info.iloc[-1,:]
-    
-    #create logistic regression models
-    root_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                solver='lbfgs', max_iter=1000)
-    quality_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                solver='lbfgs', max_iter=1000)
-    add_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                solver='lbfgs', max_iter=1000)
-    inv_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                solver='lbfgs', max_iter=1000)
-    
+def train(source, destination, source_dir, target_dir, weight, L2weight, fraction, metrics_only):
     #load data
     features_train = np.load(f'{source_dir}{source}_ftrain.npy')
     labels_train = np.load(f'{source_dir}{source}_ltrain.npy')
@@ -94,7 +80,7 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
         standard_labels_valid = np.load(f'{source_dir}{source}_lsvalid.npy')
         standard_features_test = np.load(f'{source_dir}{source}_fstest.npy')
         standard_labels_test = np.load(f'{source_dir}{source}_lstest.npy')
-        
+    
     #select fraction of training songs
     if fraction < 1:
         if curr_data_info['transpose']:
@@ -107,35 +93,60 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
             kept_rows = np.arange(standard_labels_train.shape[0]) <= standard_labels_train.shape[0]*fraction
             standard_features_train = standard_features_train[kept_rows,:]
             standard_labels_train = standard_labels_train[kept_rows,:]
-    
-    #Train models
-    root_model.fit(features_train, labels_train[:,0])
-    if curr_data_info['standard']:
-        quality_model.fit(standard_features_train, standard_labels_train[:,1])
-        add_model.fit(standard_features_train, standard_labels_train[:,2])
-        inv_model.fit(standard_features_train, standard_labels_train[:,3])
-    else:
-        quality_model.fit(features_train, labels_train[:,1])
-        add_model.fit(features_train, labels_train[:,2])
-        inv_model.fit(features_train, labels_train[:,3])
-    
-    #save models
-    with open(f'{target_dir}{destination}.pkl', 'wb') as f:
-        pickle.dump(root_model, f)
-        pickle.dump(quality_model, f)
-        pickle.dump(add_model, f)
-        pickle.dump(inv_model, f)
-    
-    #generate directory file if it doesn't already exist.
-    if not os.path.exists(target_dir + 'lr_directory.csv'):
-        header = 'sourcepath,filepath,weighted,fraction,L2weight'
+
+    if not metrics_only:
+        #get information from processed data directory
+        data_info = pd.read_csv(source_dir + 'directory.csv')
+        curr_data_info = data_info.loc[data_info['filepath']==source,:]
+        if curr_data_info.shape[0] < 1:
+            print('Source not found in directory')
+            sys.exit(1)
+        curr_data_info = curr_data_info.iloc[-1,:]
+
+        #create logistic regression models
+        root_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
+                                                    solver='lbfgs', max_iter=1000)
+        quality_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
+                                                    solver='lbfgs', max_iter=1000)
+        add_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
+                                                    solver='lbfgs', max_iter=1000)
+        inv_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
+                                                    solver='lbfgs', max_iter=1000)
+
+        #Train models
+        root_model.fit(features_train, labels_train[:,0])
+        if curr_data_info['standard']:
+            quality_model.fit(standard_features_train, standard_labels_train[:,1])
+            add_model.fit(standard_features_train, standard_labels_train[:,2])
+            inv_model.fit(standard_features_train, standard_labels_train[:,3])
+        else:
+            quality_model.fit(features_train, labels_train[:,1])
+            add_model.fit(features_train, labels_train[:,2])
+            inv_model.fit(features_train, labels_train[:,3])
+
+        #save models
+        with open(f'{target_dir}{destination}.pkl', 'wb') as f:
+            pickle.dump(root_model, f)
+            pickle.dump(quality_model, f)
+            pickle.dump(add_model, f)
+            pickle.dump(inv_model, f)
+
+        #generate directory file if it doesn't already exist.
+        if not os.path.exists(target_dir + 'lr_directory.csv'):
+            header = 'sourcepath,filepath,weighted,fraction,L2weight'
+            with open(target_dir + 'lr_directory.csv','a') as f:
+                f.write(header)
+
+        #record settings in file
+        newrow = f"\n{source},{destination},{weight},{fraction},{L2weight}"
         with open(target_dir + 'lr_directory.csv','a') as f:
-            f.write(header)
-    
-    #record settings in file
-    newrow = f"\n{source},{destination},{weight},{fraction},{L2weight}"
-    with open(target_dir + 'lr_directory.csv','a') as f:
-        f.write(newrow)
+            f.write(newrow)
+    else:
+        with open(f'{target_dir}{destination}.pkl', 'wb') as f:
+            root_model = pickle.load(f)
+            quality_model = pickle.load(f)
+            add_model = pickle.load(f)
+            inv_model = pickle.load(f)
         
     #Get F1, accuracy, and confusion_matrix metrics
     metrics = {}
@@ -145,9 +156,9 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     metrics['root_acc_train'] = sklearn.metrics.accuracy_score(labels_train[:,0],root_predict_train)
     metrics['root_acc_valid'] = sklearn.metrics.accuracy_score(labels_valid[:,0],root_predict_valid)
     metrics['root_acc_test'] = sklearn.metrics.accuracy_score(labels_test[:,0],root_predict_test)
-    metrics['root_cmat_train'] = sklearn.metrics.confusion_matrix(labels_train[:,0],root_predict_train)
-    metrics['root_cmat_valid'] = sklearn.metrics.confusion_matrix(labels_valid[:,0],root_predict_valid)
-    metrics['root_cmat_test'] = sklearn.metrics.confusion_matrix(labels_test[:,0],root_predict_test)
+    metrics['root_cmat_train'] = sklearn.metrics.confusion_matrix(labels_train[:,0],root_predict_train,labels=range(-1,12))
+    metrics['root_cmat_valid'] = sklearn.metrics.confusion_matrix(labels_valid[:,0],root_predict_valid,labels=range(-1,12))
+    metrics['root_cmat_test'] = sklearn.metrics.confusion_matrix(labels_test[:,0],root_predict_test,labels=range(-1,12))
     metrics['root_F1_train'] = sklearn.metrics.f1_score(labels_train[:,0],root_predict_train,average='weighted')
     metrics['root_F1_valid'] = sklearn.metrics.f1_score(labels_valid[:,0],root_predict_valid,average='weighted')
     metrics['root_F1_test'] = sklearn.metrics.f1_score(labels_test[:,0],root_predict_test,average='weighted')
@@ -158,9 +169,9 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     metrics['quality_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,1],quality_predict_train)
     metrics['quality_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,1],quality_predict_valid)
     metrics['quality_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,1],quality_predict_test)
-    metrics['quality_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,1],quality_predict_train)
-    metrics['quality_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,1],quality_predict_valid)
-    metrics['quality_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,1],quality_predict_test)
+    metrics['quality_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,1],quality_predict_train,labels=range(8))
+    metrics['quality_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,1],quality_predict_valid,labels=range(8))
+    metrics['quality_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,1],quality_predict_test,labels=range(8))
     metrics['quality_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='weighted')
     metrics['quality_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='weighted')
     metrics['quality_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='weighted')
@@ -171,9 +182,9 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     metrics['add_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,2],add_predict_train)
     metrics['add_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,2],add_predict_valid)
     metrics['add_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,2],add_predict_test)
-    metrics['add_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,2],add_predict_train)
-    metrics['add_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,2],add_predict_valid)
-    metrics['add_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,2],add_predict_test)
+    metrics['add_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,2],add_predict_train,labels=range(9))
+    metrics['add_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,2],add_predict_valid,labels=range(9))
+    metrics['add_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,2],add_predict_test,labels=range(9))
     metrics['add_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='weighted')
     metrics['add_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='weighted')
     metrics['add_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='weighted')
@@ -184,9 +195,9 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     metrics['inv_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,3],inv_predict_train)
     metrics['inv_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,3],inv_predict_valid)
     metrics['inv_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,3],inv_predict_test)
-    metrics['inv_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,3],inv_predict_train)
-    metrics['inv_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,3],inv_predict_valid)
-    metrics['inv_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,3],inv_predict_test)
+    metrics['inv_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,3],inv_predict_train,labels=range(3))
+    metrics['inv_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,3],inv_predict_valid,labels=range(3))
+    metrics['inv_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,3],inv_predict_test,labels=range(3))
     metrics['inv_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='weighted')
     metrics['inv_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='weighted')
     metrics['inv_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='weighted')

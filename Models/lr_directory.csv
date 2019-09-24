@@ -2,3 +2,9 @@ sourcepath,filepath,weighted,fraction,L2weight
 partial_lr,partial,balanced,1,1.0
 partial_lr,partial,balanced,1,1.0
 partial_lr,partial,balanced,1,1.0
+full_lr,full_1,None,1,1.0
+full_lr,full_03,None,1,0.3
+full_lr,full_01,None,1,0.1
+full_lr,full_3,None,1,3.0
+full_lr,full_10,None,1,10.0
+default_lr,partial,balanced,1,1.0
