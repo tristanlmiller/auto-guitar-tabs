@@ -58,6 +58,9 @@ def main():
             print('fraction must be between 0 and 1')
             sys.exit(1)
         del args[0:2]
+    train(source, destination, source_dir, target_dir, weight, L2weight, fraction)
+    
+def train(source, destination, source_dir, target_dir, weight, L2weight, fraction):
         
     #get information from processed data directory
     data_info = pd.read_csv(source_dir + 'directory.csv')
@@ -68,13 +71,13 @@ def main():
     curr_data_info = curr_data_info.iloc[-1,:]
     
     #create logistic regression models
-    root_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2_weight,
+    root_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
                                                 solver='lbfgs', max_iter=1000)
-    quality_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2_weight,
+    quality_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
                                                 solver='lbfgs', max_iter=1000)
-    add_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2_weight,
+    add_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
                                                 solver='lbfgs', max_iter=1000)
-    inv_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2_weight,
+    inv_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
                                                 solver='lbfgs', max_iter=1000)
     
     #load data
@@ -134,7 +137,94 @@ def main():
     with open(target_dir + 'lr_directory.csv','a') as f:
         f.write(newrow)
         
-    #Next, get metrics
+    #Get F1, accuracy, and confusion_matrix metrics
+    metrics = {}
+    root_predict_train = root_model.predict(features_train)
+    root_predict_valid = root_model.predict(features_valid)
+    root_predict_test = root_model.predict(features_test)
+    metrics['root_acc_train'] = sklearn.metrics.accuracy_score(labels_train[:,0],root_predict_train)
+    metrics['root_acc_valid'] = sklearn.metrics.accuracy_score(labels_valid[:,0],root_predict_valid)
+    metrics['root_acc_test'] = sklearn.metrics.accuracy_score(labels_test[:,0],root_predict_test)
+    metrics['root_cmat_train'] = sklearn.metrics.confusion_matrix(labels_train[:,0],root_predict_train)
+    metrics['root_cmat_valid'] = sklearn.metrics.confusion_matrix(labels_valid[:,0],root_predict_valid)
+    metrics['root_cmat_test'] = sklearn.metrics.confusion_matrix(labels_test[:,0],root_predict_test)
+    metrics['root_F1_train'] = sklearn.metrics.f1_score(labels_train[:,0],root_predict_train,average='weighted')
+    metrics['root_F1_valid'] = sklearn.metrics.f1_score(labels_valid[:,0],root_predict_valid,average='weighted')
+    metrics['root_F1_test'] = sklearn.metrics.f1_score(labels_test[:,0],root_predict_test,average='weighted')
+    
+    quality_predict_train = quality_model.predict(standard_features_train)
+    quality_predict_valid = quality_model.predict(standard_features_valid)
+    quality_predict_test = quality_model.predict(standard_features_test)
+    metrics['quality_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,1],quality_predict_train)
+    metrics['quality_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,1],quality_predict_valid)
+    metrics['quality_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,1],quality_predict_test)
+    metrics['quality_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,1],quality_predict_train)
+    metrics['quality_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,1],quality_predict_valid)
+    metrics['quality_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,1],quality_predict_test)
+    metrics['quality_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='weighted')
+    metrics['quality_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='weighted')
+    metrics['quality_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='weighted')
+    
+    add_predict_train = add_model.predict(standard_features_train)
+    add_predict_valid = add_model.predict(standard_features_valid)
+    add_predict_test = add_model.predict(standard_features_test)
+    metrics['add_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,2],add_predict_train)
+    metrics['add_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,2],add_predict_valid)
+    metrics['add_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,2],add_predict_test)
+    metrics['add_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,2],add_predict_train)
+    metrics['add_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,2],add_predict_valid)
+    metrics['add_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,2],add_predict_test)
+    metrics['add_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='weighted')
+    metrics['add_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='weighted')
+    metrics['add_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='weighted')
+    
+    inv_predict_train = inv_model.predict(standard_features_train)
+    inv_predict_valid = inv_model.predict(standard_features_valid)
+    inv_predict_test = inv_model.predict(standard_features_test)
+    metrics['inv_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,3],inv_predict_train)
+    metrics['inv_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,3],inv_predict_valid)
+    metrics['inv_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,3],inv_predict_test)
+    metrics['inv_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,3],inv_predict_train)
+    metrics['inv_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,3],inv_predict_valid)
+    metrics['inv_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,3],inv_predict_test)
+    metrics['inv_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='weighted')
+    metrics['inv_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='weighted')
+    metrics['inv_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='weighted')
+    
+    #compute total accuracy
+    all_predict_train = np.zeros((root_predict_train.shape[0],4))
+    all_predict_train[:,0] = root_predict_train
+    notnan_train = ~np.isnan(labels_train[:,0])
+    standard_predict_train = labels_train[notnan_train,0] >= 0
+    all_predict_train[standard_predict_train,1] = quality_predict_train
+    all_predict_train[standard_predict_train,2] = add_predict_train
+    all_predict_train[standard_predict_train,3] = inv_predict_train
+    total_acc_train = np.all(all_predict_train == labels_train[notnan_train,:],axis=1)
+    metrics['total_acc_train'] = sum(total_acc_train)/len(total_acc_train)
+    
+    all_predict_valid = np.zeros((root_predict_valid.shape[0],4))
+    all_predict_valid[:,0] = root_predict_valid
+    notnan_valid = ~np.isnan(labels_valid[:,0])
+    standard_predict_valid = labels_valid[notnan_valid,0] >= 0
+    all_predict_valid[standard_predict_valid,1] = quality_predict_valid
+    all_predict_valid[standard_predict_valid,2] = add_predict_valid
+    all_predict_valid[standard_predict_valid,3] = inv_predict_valid
+    total_acc_valid = np.all(all_predict_valid == labels_valid[notnan_valid,:],axis=1)
+    metrics['total_acc_valid'] = sum(total_acc_valid)/len(total_acc_valid)
+    
+    all_predict_test = np.zeros((root_predict_test.shape[0],4))
+    all_predict_test[:,0] = root_predict_test
+    notnan_test = ~np.isnan(labels_test[:,0])
+    standard_predict_test = labels_test[notnan_test,0] >= 0
+    all_predict_test[standard_predict_test,1] = quality_predict_test
+    all_predict_test[standard_predict_test,2] = add_predict_test
+    all_predict_test[standard_predict_test,3] = inv_predict_test
+    total_acc_test = np.all(all_predict_test == labels_test[notnan_test,:],axis=1)
+    metrics['total_acc_test'] = sum(total_acc_test)/len(total_acc_test)
 
+    #save metrics
+    with open(f'{target_dir}{destination}_metrics.pkl', 'wb') as f:
+        pickle.dump(metrics, f)
+        
 if __name__ == '__main__':
     main()

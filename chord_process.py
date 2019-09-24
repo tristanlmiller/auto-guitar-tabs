@@ -20,7 +20,6 @@ If standard option is used, also saves files with these suffixes:
     _lsvalid.npy - standardized validation set labels
     _fstest.npy - standardized test set features
     _lstest.npy - standardized test set labels
-    Note that even though standard is False by default, Standard=False is not currently supported by lr_predict.py.
 --block blocklength - Divides chords/mp3s into blocks of time approximately equal to block_length in seconds.
     (Default = 0.5)
 --min minfreq - minimum frequency in the Constant-Q Transform (Default = 21.35 Hz, or F0)
@@ -28,7 +27,8 @@ If standard option is used, also saves files with these suffixes:
 --bin bins_per_note - number of CQT bins per note (of which there are 12 in an octave) (Default = 1)
 --transpose - If True, then duplicates and transposes training data (Default = False)
 --standard - If True, then saves extra copy of features transposed so root is C.
-    Also saves extra copy of train labels so that dimensions match (Default = False)
+    Also saves extra copy of labels so that dimensions match (Default = False)
+    Note that even though standard is False by default, Standard=False is not currently supported by lr_train.py
 --fraction - Use only on fraction of data (Default = 1)
 '''
     

@@ -85,7 +85,7 @@ def get_quality(row):
         else:
             return quality_to_num['maj']
     else:
-        return np.nan
+        return quality_to_num['']
 
 #return inversion type in int format.  Only counts first and second inversions
 def simplify_inversion(row):
