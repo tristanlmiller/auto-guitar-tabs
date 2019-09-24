@@ -194,7 +194,7 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     #compute total accuracy
     
     if curr_data_info['transpose']:
-        all_predict_train = np.zeros((root_predict_train.shape[0]/12,4))
+        all_predict_train = np.zeros((int(root_predict_train.shape[0]/12),4))
         all_predict_train[:,0] = root_predict_train[0:all_predict_train.shape[0]]
         notnan_train = ~np.isnan(labels_train[:,0])
         standard_predict_train = (labels_train[notnan_train,0] >= 0)[0:all_predict_train.shape[0]]
