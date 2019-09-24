@@ -3,3 +3,4 @@ Data/*
 .DS_Store
 __pycache__/
 Results/*
+scratch.ipynb
