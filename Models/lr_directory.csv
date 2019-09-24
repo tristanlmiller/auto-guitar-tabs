@@ -1,6 +1,0 @@
-
-default_lr,default_10,balanced,1
-default_lr,default_08,balanced,0.8
-default_lr,default_06,balanced,0.6
-default_lr,default_04,balanced,0.4
-default_lr,default_02,balanced,0.2

@@ -80,10 +80,11 @@ def predict(link, model_filename, destination, block_length, minfreq, num_octave
     os.remove('Data/temp.mp3')
         
     #load models from pickles
-    root_model = pickle.load(open(f"{model_dir}{model_filename}_root.pkl", 'rb'))
-    quality_model = pickle.load(open(f"{model_dir}{model_filename}_quality.pkl", 'rb'))
-    add_model = pickle.load(open(f"{model_dir}{model_filename}_add.pkl", 'rb'))
-    inv_model = pickle.load(open(f"{model_dir}{model_filename}_inv.pkl", 'rb'))
+    with open(f"{model_dir}{model_filename}.pkl", 'rb') as f:
+        root_model = pickle.load(f)
+        quality_model = pickle.load(f)
+        add_model = pickle.load(f)
+        inv_model = pickle.load(f)
     
     #predict the root
     root_labels = root_model.predict(song_features)

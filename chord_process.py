@@ -20,6 +20,7 @@ If standard option is used, also saves files with these suffixes:
     _lsvalid.npy - standardized validation set labels
     _fstest.npy - standardized test set features
     _lstest.npy - standardized test set labels
+    Note that even though standard is False by default, Standard=False is not currently supported by lr_predict.py.
 --block blocklength - Divides chords/mp3s into blocks of time approximately equal to block_length in seconds.
     (Default = 0.5)
 --min minfreq - minimum frequency in the Constant-Q Transform (Default = 21.35 Hz, or F0)
@@ -50,7 +51,7 @@ def main():
     
     #default options:
     block_length = 0.5
-    minfreq = 21.35
+    minfreq = 24.5 # G0
     num_octaves = 7
     bins_per_note = 1
     transpose = False
