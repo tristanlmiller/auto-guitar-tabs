@@ -106,10 +106,15 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     if not metrics_only:
 
         #create logistic regression models
-        root_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
-        quality_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
-        add_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
-        inv_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
+        model_options = {'class_weight':weight,
+                   'decision_function_shape':'ovr',
+                   'C':L2weight,
+                   'max_iter':1000,
+                   'gamma':'auto'}
+        root_model = SVC(**model_options)
+        quality_model = SVC(**model_options)
+        add_model = SVC(**model_options)
+        inv_model = SVC(**model_options)
 
         #Train models
         root_model.fit(features_train, labels_train[:,0])
