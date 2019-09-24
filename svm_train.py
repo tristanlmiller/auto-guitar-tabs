@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Trains a logistic regression model on processed data, saves model as pickle.
+Trains a support vector classifier on processed data, saves model as pickle.
 
 usage: source destination [--weighted --C L2weight --frac fraction --metrics]
 
@@ -13,7 +13,7 @@ Files will be saved with the following suffixes:
     _add.pkl - model of add
     _inv.pkl - model of inversion
 --weighted - if option is selected, then logistic regression is performed with balanced weighting
---C L2weight - regularization strength input into logistic regression model
+--C L2weight - Penalty of parameter of error term (which isn't L2 weight anymore, but I kept the name from lr_train)
 --frac - fraction of training data to use, e.g. if you're making learning curves (Default = 1)
 --metrics - calculates metrics only using pre-existing model
 '''
@@ -23,7 +23,7 @@ import pandas as pd
 import numpy as np
 import sys, os
 import sklearn
-from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 import pickle
 
 def main():
@@ -106,14 +106,10 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     if not metrics_only:
 
         #create logistic regression models
-        root_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
-        quality_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
-        add_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
-        inv_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
+        root_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
+        quality_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
+        add_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
+        inv_model = SVC(class_weight=weight,decision_function_shape='ovr',C=L2weight, max_iter=1000)
 
         #Train models
         root_model.fit(features_train, labels_train[:,0])
@@ -140,7 +136,7 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
                 f.write(header)
 
         #record settings in file
-        newrow = f"\n{source},{destination},{weight},{fraction},{L2weight},lr"
+        newrow = f"\n{source},{destination},{weight},{fraction},{L2weight},svm"
         with open(target_dir + 'model_directory.csv','a') as f:
             f.write(newrow)
     else:
