@@ -192,10 +192,17 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     metrics['inv_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='weighted')
     
     #compute total accuracy
-    all_predict_train = np.zeros((root_predict_train.shape[0],4))
-    all_predict_train[:,0] = root_predict_train
-    notnan_train = ~np.isnan(labels_train[:,0])
-    standard_predict_train = labels_train[notnan_train,0] >= 0
+    
+    if curr_data_info['transpose']:
+        all_predict_train = np.zeros((root_predict_train.shape[0]/12,4))
+        all_predict_train[:,0] = root_predict_train[0:all_predict_train.shape[0]]
+        notnan_train = ~np.isnan(labels_train[:,0])
+        standard_predict_train = (labels_train[notnan_train,0] >= 0)[0:all_predict_train.shape[0]]
+    else:
+        all_predict_train = np.zeros((root_predict_train.shape[0],4))
+        all_predict_train[:,0] = root_predict_train
+        notnan_train = ~np.isnan(labels_train[:,0])
+        standard_predict_train = labels_train[notnan_train,0] >= 0
     all_predict_train[standard_predict_train,1] = quality_predict_train
     all_predict_train[standard_predict_train,2] = add_predict_train
     all_predict_train[standard_predict_train,3] = inv_predict_train
