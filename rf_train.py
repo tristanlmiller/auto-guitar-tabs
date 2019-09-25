@@ -108,7 +108,7 @@ def train(source, destination, source_dir, target_dir, weight, num_estimators, f
         #create logistic regression models
         model_options = {'class_weight':weight,
                    'num_estimators':num_estimators,
-                         max_features='sqrt'}
+                         'max_features':'sqrt'}
         root_model = SVC(**model_options)
         quality_model = SVC(**model_options)
         add_model = SVC(**model_options)
