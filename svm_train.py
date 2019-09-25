@@ -136,7 +136,7 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
 
         #generate directory file if it doesn't already exist.
         if not os.path.exists(target_dir + 'lr_directory.csv'):
-            header = 'sourcepath,filepath,weighted,fraction,C,Model'
+            header = 'sourcepath,filepath,weighted,fraction,param,Model'
             with open(target_dir + 'model_directory.csv','a') as f:
                 f.write(header)
 

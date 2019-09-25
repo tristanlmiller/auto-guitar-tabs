@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 '''
-Trains a logistic regression model on processed data, saves model as pickle.
+Trains a random forest classifier on processed data, saves model as pickle.
 
-usage: source destination [--weighted --C L2weight --frac fraction --metrics]
+usage: source destination [--weighted --num num_estimators --frac fraction --metrics]
 
 Options:
 source - prefix of data files used for this model (same as what was provided to chord_process.py)
@@ -13,7 +13,7 @@ Files will be saved with the following suffixes:
     _add.pkl - model of add
     _inv.pkl - model of inversion
 --weighted - if option is selected, then logistic regression is performed with balanced weighting
---C L2weight - regularization strength input into logistic regression model
+--num num_estimators - Number of trees to plant
 --frac - fraction of training data to use, e.g. if you're making learning curves (Default = 1)
 --metrics - calculates metrics only using pre-existing model
 '''
@@ -23,7 +23,7 @@ import pandas as pd
 import numpy as np
 import sys, os
 import sklearn
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 import pickle
 
 def main():
@@ -40,7 +40,7 @@ def main():
     fraction = 1
     source_dir = 'Data/processed/'
     target_dir = 'Models/'
-    L2weight = 1.0
+    num_estimators = 100
     metrics_only = False
     
     #parse user options
@@ -51,8 +51,8 @@ def main():
     if args[0] == '--weighted':
         weight = 'balanced'
         del args[0:1]
-    if args[0] == '--C':
-        L2weight = float(args[1])
+    if args[0] == '--num':
+        num_estimators = float(args[1])
         del args[0:2]
     if args[0] == '--frac':
         fraction = float(args[1])
@@ -63,9 +63,9 @@ def main():
     if args[0] == '--metrics':
         metrics_only = True
         del args[0:1]
-    train(source, destination, source_dir, target_dir, weight, L2weight, fraction, metrics_only)
+    train(source, destination, source_dir, target_dir, weight, num_estimators, fraction, metrics_only)
     
-def train(source, destination, source_dir, target_dir, weight, L2weight, fraction, metrics_only):
+def train(source, destination, source_dir, target_dir, weight, num_estimators, fraction, metrics_only):
     
     #get information from processed data directory
     data_info = pd.read_csv(source_dir + 'directory.csv')
@@ -106,14 +106,13 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
     if not metrics_only:
 
         #create logistic regression models
-        root_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
-        quality_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
-        add_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
-        inv_model = LogisticRegression(class_weight=weight,multi_class='ovr',C=L2weight,
-                                                    solver='lbfgs', max_iter=1000)
+        model_options = {'class_weight':weight,
+                   'num_estimators':num_estimators,
+                         max_features='sqrt'}
+        root_model = SVC(**model_options)
+        quality_model = SVC(**model_options)
+        add_model = SVC(**model_options)
+        inv_model = SVC(**model_options)
 
         #Train models
         root_model.fit(features_train, labels_train[:,0])
@@ -140,7 +139,7 @@ def train(source, destination, source_dir, target_dir, weight, L2weight, fractio
                 f.write(header)
 
         #record settings in file
-        newrow = f"\n{source},{destination},{weight},{fraction},{L2weight},lr"
+        newrow = f"\n{source},{destination},{weight},{fraction},{num_estimators},rf"
         with open(target_dir + 'model_directory.csv','a') as f:
             f.write(newrow)
     else:
