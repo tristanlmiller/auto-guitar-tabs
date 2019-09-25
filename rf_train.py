@@ -52,7 +52,7 @@ def main():
         weight = 'balanced'
         del args[0:1]
     if args[0] == '--num':
-        num_estimators = float(args[1])
+        num_estimators = int(args[1])
         del args[0:2]
     if args[0] == '--frac':
         fraction = float(args[1])
@@ -107,12 +107,12 @@ def train(source, destination, source_dir, target_dir, weight, num_estimators, f
 
         #create logistic regression models
         model_options = {'class_weight':weight,
-                   'num_estimators':num_estimators,
+                   'n_estimators':num_estimators,
                          'max_features':'sqrt'}
-        root_model = SVC(**model_options)
-        quality_model = SVC(**model_options)
-        add_model = SVC(**model_options)
-        inv_model = SVC(**model_options)
+        root_model = RandomForestClassifier(**model_options)
+        quality_model = RandomForestClassifier(**model_options)
+        add_model = RandomForestClassifier(**model_options)
+        inv_model = RandomForestClassifier(**model_options)
 
         #Train models
         root_model.fit(features_train, labels_train[:,0])
