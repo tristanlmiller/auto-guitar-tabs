@@ -2,7 +2,7 @@
 '''
 Trains a random forest classifier on processed data, saves model as pickle.
 
-usage: source destination [--weighted --num num_estimators --frac fraction --metrics]
+usage: source destination [--weighted --num num_estimators --depth max_depth --frac fraction --metrics]
 
 Options:
 source - prefix of data files used for this model (same as what was provided to chord_process.py)
@@ -14,6 +14,7 @@ Files will be saved with the following suffixes:
     _inv.pkl - model of inversion
 --weighted - if option is selected, then logistic regression is performed with balanced weighting
 --num num_estimators - Number of trees to plant
+--depth max_depth - max depth of each tree -- necessary to reduce disk usage
 --frac - fraction of training data to use, e.g. if you're making learning curves (Default = 1)
 --metrics - calculates metrics only using pre-existing model
 '''
@@ -41,6 +42,7 @@ def main():
     source_dir = 'Data/processed/'
     target_dir = 'Models/'
     num_estimators = 100
+    max_depth = None
     metrics_only = False
     
     #parse user options
@@ -54,6 +56,9 @@ def main():
     if args[0] == '--num':
         num_estimators = int(args[1])
         del args[0:2]
+    if args[0] == '--depth':
+        max_depth = int(args[1])
+        del args[0:2]
     if args[0] == '--frac':
         fraction = float(args[1])
         if fraction < 0 or fraction > 1:
@@ -63,9 +68,9 @@ def main():
     if args[0] == '--metrics':
         metrics_only = True
         del args[0:1]
-    train(source, destination, source_dir, target_dir, weight, num_estimators, fraction, metrics_only)
+    train(source, destination, source_dir, target_dir, weight, num_estimators, max_depth, fraction, metrics_only)
     
-def train(source, destination, source_dir, target_dir, weight, num_estimators, fraction, metrics_only):
+def train(source, destination, source_dir, target_dir, weight, num_estimators, max_depth, fraction, metrics_only):
     
     #get information from processed data directory
     data_info = pd.read_csv(source_dir + 'directory.csv')
@@ -108,7 +113,8 @@ def train(source, destination, source_dir, target_dir, weight, num_estimators, f
         #create logistic regression models
         model_options = {'class_weight':weight,
                    'n_estimators':num_estimators,
-                         'max_features':'sqrt'}
+                         'max_features':'sqrt',
+                        'max_depth':max_depth}
         root_model = RandomForestClassifier(**model_options)
         quality_model = RandomForestClassifier(**model_options)
         add_model = RandomForestClassifier(**model_options)
