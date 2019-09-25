@@ -4,3 +4,4 @@ Data/*
 __pycache__/
 Results/*
 scratch.ipynb
+Models/rf*
