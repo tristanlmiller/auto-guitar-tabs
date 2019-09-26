@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-Predicts chords for an mp3 at the given link, converts to readable format
+Predicts chords for an mp3 at the given link, converts to readable format.
+Although this is labeled lr_predict, it can in fact be used for any model in the sklearn format.
 
 usage: link model destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note]
 
