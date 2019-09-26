@@ -125,7 +125,7 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
         info.to_csv(f'{target_dir}{destination}_info.csv',index=False)
         
     else:
-        with open(f'{target_dir}{destination}.pkl', 'wb') as f:
+        with open(f'{target_dir}{destination}.pkl', 'rb') as f:
             root_model = pickle.load(f)
             quality_model = pickle.load(f)
             add_model = pickle.load(f)
@@ -217,7 +217,7 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['total_acc_test'] = sum(total_acc_test)/len(total_acc_test)
 
     #save metrics
-    with open(f'{target_dir}{destination}_metrics.pkl', 'rb') as f:
+    with open(f'{target_dir}{destination}_metrics.pkl', 'wb') as f:
         pickle.dump(metrics, f)
         
     runtime = (time.time() - start_time)/60
