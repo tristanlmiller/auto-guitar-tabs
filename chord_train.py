@@ -295,10 +295,6 @@ def train_xgb(model, params, features_train,labels_train,features_valid,labels_v
                      'n_estimators':num_estimators,
                      'n_jobs':4
                     }
-    root_model = xgb.XGBClassifier(**model_options)
-    quality_model = xgb.XGBClassifier(**model_options)
-    add_model = xgb.XGBClassifier(**model_options)
-    inv_model = xgb.XGBClassifier(**model_options)
 
     #Train models
     if weight == 'balanced':
@@ -324,7 +320,8 @@ def get_weights(labels):
     for value,count in zip(values,counts):
         class_weight[value] = 1/(count+1) #add one to prevent divide-by-zero errors
     weights = np.vectorize(class_weight.get)(labels)
-    return weights
+    mult = labels.shape[0]/sum(weights)
+    return weights*mult
                 
 if __name__ == '__main__':
     main()
