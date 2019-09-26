@@ -295,10 +295,10 @@ def train_xgb(model, params, features_train,labels_train,features_valid,labels_v
                      'n_estimators':num_estimators,
                      'n_jobs':4
                     }
-    root_model = xgb.XGBClassifier(**options)
-    quality_model = xgb.XGBClassifier(**options)
-    add_model = xgb.XGBClassifier(**options)
-    inv_model = xgb.XGBClassifier(**options)
+    root_model = xgb.XGBClassifier(**model_options)
+    quality_model = xgb.XGBClassifier(**model_options)
+    add_model = xgb.XGBClassifier(**model_options)
+    inv_model = xgb.XGBClassifier(**model_options)
     
     #Train models
     if weight == 'balanced':
