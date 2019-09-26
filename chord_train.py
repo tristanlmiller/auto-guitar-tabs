@@ -21,6 +21,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
 import pickle
+import time
 
 def main():
     
@@ -62,7 +63,9 @@ def main():
     
 def prepare_train(model, source, destination, source_dir, target_dir, fraction, metrics_only, params):
     '''Prepare data for training, and then train it'''
-
+    
+    start_time = time.time()
+    
     #load data
     features_train = np.load(f'{source_dir}{source}_ftrain.npy')
     labels_train = np.load(f'{source_dir}{source}_ltrain.npy')
@@ -212,6 +215,9 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     #save metrics
     with open(f'{target_dir}{destination}_metrics.pkl', 'wb') as f:
         pickle.dump(metrics, f)
+        
+    runtime = (time.time() - start_time)/60
+    print(f'Runtime: {runtime:.2f} min')
         
 def train(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
     '''Creates and trains model of given type and parameters'''
