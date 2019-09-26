@@ -2,7 +2,7 @@
 '''
 Processes all chords and mp3s and saves them as npy files.
 
-usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --transpose --standard --frac fraction']
+usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --frac fraction]
 
 Options:
 destination - prefix for the names of destination files
@@ -25,10 +25,6 @@ If standard option is used, also saves files with these suffixes:
 --min minfreq - minimum frequency in the Constant-Q Transform (Default = 21.35 Hz, or F0)
 --oct num-octaves - number of octaves to include as featuress (Default = 7)
 --bin bins_per_note - number of CQT bins per note (of which there are 12 in an octave) (Default = 1)
---transpose - If True, then duplicates and transposes training data (Default = False)
---standard - If True, then saves extra copy of features transposed so root is C.
-    Also saves extra copy of labels so that dimensions match (Default = False)
-    Note that even though standard is False by default, Standard=False is not currently supported by lr_train.py
 --fraction - Use only on fraction of data (Default = 1)
 '''
     
@@ -46,7 +42,7 @@ def main():
     args.append('')
     
     if not args:
-        print('usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --transpose --standard] --frac fraction')
+        print('usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --frac fraction]')
         sys.exit(1)
     
     #default options:
@@ -54,8 +50,8 @@ def main():
     minfreq = 24.5 # G0
     num_octaves = 7
     bins_per_note = 1
-    transpose = False
-    standard = False
+    transpose = True #now always true
+    standard = True #now always true
     fraction = 1
     target_dir = 'Data/processed/'
     
@@ -74,12 +70,6 @@ def main():
     if args[0] == '--bin':
         bins_per_note = int(args[1])
         del args[0:2]
-    if args[0] == '--transpose':
-        transpose = True
-        del args[0]
-    if args[0] == '--standard':
-        standard = True
-        del args[0]
     if args[0] == '--frac':
         fraction = float(args[1])
         del args[0:2]
@@ -87,7 +77,9 @@ def main():
     #load directory and split into train, validation, and test sets
     print('Performing test/training split')
     song_directory = pd.read_csv('song_directory.csv')
-    valid_directory = song_directory.loc[~pd.isna(song_directory['mp3_filepath'])]
+    valid_directory = song_directory.loc[np.logical_and(
+        ~pd.isna(song_directory['mp3_filepath']),
+        abs(song_directory['diff_length']) <= 5)]
     np.random.seed(35402374)
     if fraction < 1:
         valid_directory, temp_set = train_test_split(valid_directory,shuffle=True,train_size = fraction)
