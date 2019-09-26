@@ -4,9 +4,9 @@ from flaskapp import app
 #from sqlalchemy import create_engine
 #from sqlalchemy_utils import database_exists, create_database
 import pandas as pd
-import psycopg2
+#import psycopg2
 import sys, os
-import subprocess
+#import subprocess
 import pickle
 
 #sys.path.append('..')
@@ -15,12 +15,12 @@ import lr_predict
 # Python code to connect to Postgres
 # You may need to modify this based on your OS,
 # as detailed in the postgres dev setup materials.
-user = 'tristanmiller' #add your Postgres username here
-host = 'localhost'
-dbname = 'birth_db'
-db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
-con = None
-con = psycopg2.connect(database = dbname, user = user, host = host, password = 'mypassword') #add your Postgres password here
+#user = 'tristanmiller' #add your Postgres username here
+#host = 'localhost'
+#dbname = 'birth_db'
+#db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
+#con = None
+#con = psycopg2.connect(database = dbname, user = user, host = host, password = 'mypassword') #add your Postgres password here
 
 @app.route('/')
 @app.route('/index')
@@ -32,8 +32,9 @@ def index():
 def chord_output():
     url = request.args.get('youtube_url')
     video_code = url[32:]
-
-    lr_predict.predict(url, 'default_10', f"{video_code}", 0.5, 21.35, 7, 1,
+    
+    model_path = 'xgb_partial'
+    lr_predict.predict(url, model_path, f"{video_code}", 0.5, 21.35, 7, 1,
                         'Models/', 'Results/')
 
     results = pickle.load(open(f"Results/{video_code}.pkl", 'rb'))
