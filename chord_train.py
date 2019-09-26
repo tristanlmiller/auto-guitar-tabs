@@ -2,7 +2,7 @@
 '''
 Trains a model on processed data, saves model as pickle.
 
-usage: source destination --model model [--frac --metrics --params param1 param2 etc. ]
+usage: source destination model [--frac fraction --metrics --params param1 param2 etc. ]
 
 Options:
 source - prefix of data files used for this model (same as what was provided to chord_process.py)
@@ -28,7 +28,7 @@ def main():
     args.append('')
     
     if not args:
-        print('usage: source destination -model [--frac fraction --metrics --params param1 param2 etc. ]')
+        print('usage: source destination model [--frac fraction --metrics --params param1 param2 etc. ]')
         sys.exit(1)
     
     #default options:
@@ -88,7 +88,7 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
 
     if not metrics_only:
         #create and train models
-        root_model, quality_model, add_model, inv_model = train(model
+        root_model, quality_model, add_model, inv_model = train(model, params,
             features_train,
             labels_train,
             features_valid,
@@ -102,8 +102,6 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
             standard_features_test,
             standard_labels_test)
         
-
-
         #save models
         with open(f'{target_dir}{destination}.pkl', 'wb') as f:
             pickle.dump(root_model, f)
@@ -113,7 +111,7 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
         
         #generate info file
         info = pd.DataFrame(columns=['sourcepath','filepath','model','params'])
-        info['sourcepath'] = [soruce]
+        info['sourcepath'] = [source]
         info['filepath'] = [destination]
         info['model'] = [model]
         info['params'] = [params]
@@ -215,16 +213,16 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     with open(f'{target_dir}{destination}_metrics.pkl', 'wb') as f:
         pickle.dump(metrics, f)
         
-def train(model, fraction, metrics_only, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
+def train(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
     '''Creates and trains model of given type and parameters'''
     if model == 'lr':
-        return train_lr(model, fraction, metrics_only, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
+        return train_lr(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
     elif model == 'rf':
-        return train_rf(model, fraction, metrics_only, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
+        return train_rf(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
     elif model == 'xgb':
-        return train_xgb(model, fraction, metrics_only, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
+        return train_xgb(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
     
-def train_lr(model, fraction, metrics_only, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
+def train_lr(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
     '''Logistic regression model
     params:
     sample weight ('T' for balanced or 'F' for none)
@@ -251,7 +249,7 @@ def train_lr(model, fraction, metrics_only, params, features_train,labels_train,
     
     return root_model, quality_model, add_model, inv_model
 
-def train_rf(model, fraction, metrics_only, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
+def train_rf(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
     '''Random Forest model
     params:
     sample weight ('T' for balanced or 'F' for none)
@@ -279,7 +277,7 @@ def train_rf(model, fraction, metrics_only, params, features_train,labels_train,
     
     return root_model, quality_model, add_model, inv_model
     
-def train_xgb(model, fraction, metrics_only, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
+def train_xgb(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
     '''Extreme Gradient Boosting model
     params:
     sample weight ('T' for balanced or 'F' for none)
@@ -290,7 +288,7 @@ def train_xgb(model, fraction, metrics_only, params, features_train,labels_train
     weight = 'balanced' if params[0] == 'T' else None
     num_estimators = int(params[1])
     max_depth = int(params[2])
-    learning_rate = int(params[3])
+    learning_rate = float(params[3])
     
     model_options = {'max_depth': max_depth,
                      'learning_rate': learning_rate,
@@ -320,10 +318,11 @@ def train_xgb(model, fraction, metrics_only, params, features_train,labels_train
     return root_model, quality_model, add_model, inv_model
 
 def get_weights(labels):
+    '''Given a set of categorical labels, produces a weight for each label which is inverse to its frequency'''
     values,counts = np.unique(labels,return_counts=True)
     class_weight = {}
     for value,count in zip(values,counts):
-        class_weight[value] = 1/(count+1)
+        class_weight[value] = 1/(count+1) #add one to prevent divide-by-zero errors
     weights = np.vectorize(class_weight.get)(labels)
     return weights
                 

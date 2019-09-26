@@ -1,0 +1,2 @@
+sourcepath,filepath,model,params
+partial_lr,xgb_partial,xgb,"['T', '10', '5', '0.1']"
