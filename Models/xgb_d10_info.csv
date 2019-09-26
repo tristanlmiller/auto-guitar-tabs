@@ -1,0 +1,2 @@
+sourcepath,filepath,model,params
+full,xgb_d10,xgb,"['T', '2', '10', '0.1']"
