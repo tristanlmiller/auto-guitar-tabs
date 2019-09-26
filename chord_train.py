@@ -82,12 +82,16 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     
     #select fraction of training songs
     if fraction < 1:
-        kept_rows = np.tile(np.arange(labels_train.shape[0]/12) <= labels_train.shape[0]*fraction/12,12)
-        features_train = features_train[kept_rows,:]
-        labels_train = labels_train[kept_rows,:]
-        kept_rows = np.arange(standard_labels_train.shape[0]) <= standard_labels_train.shape[0]*fraction
-        standard_features_train = standard_features_train[kept_rows,:]
-        standard_labels_train = standard_labels_train[kept_rows,:]
+        og_size = labels_train.shape[0]/12
+        kept_rows = np.arange(og_size) <= og_size*fraction
+        transpose_kept_rows = np.tile(kept_rows,12)
+        standard_rows = np.logical_and(~np.equal(labels_train[:og_size,0], -1), ~np.isnan(labels_train[:og_size,0]))
+        standard_kept_rows = np.logical_and(kept_rows, standard_rows)
+        
+        features_train = features_train[transpose_kept_rows,:]
+        labels_train = labels_train[transpose_kept_rows,:]
+        standard_features_train = standard_features_train[standard_kept_rows,:]
+        standard_labels_train = standard_labels_train[standard_kept_rows,:]
 
     if not metrics_only:
         #create and train models
