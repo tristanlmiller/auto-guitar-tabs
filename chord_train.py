@@ -82,11 +82,11 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     
     #select fraction of training songs
     if fraction < 1:
-        og_size = labels_train.shape[0]/12
+        og_size = int(labels_train.shape[0]/12)
         kept_rows = np.arange(og_size) <= og_size*fraction
         transpose_kept_rows = np.tile(kept_rows,12)
         standard_rows = np.logical_and(~np.equal(labels_train[:og_size,0], -1), ~np.isnan(labels_train[:og_size,0]))
-        standard_kept_rows = np.logical_and(kept_rows, standard_rows)
+        standard_kept_rows = kept_rows[standard_rows]
         
         features_train = features_train[transpose_kept_rows,:]
         labels_train = labels_train[transpose_kept_rows,:]
@@ -217,7 +217,7 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['total_acc_test'] = sum(total_acc_test)/len(total_acc_test)
 
     #save metrics
-    with open(f'{target_dir}{destination}_metrics.pkl', 'wb') as f:
+    with open(f'{target_dir}{destination}_metrics.pkl', 'rb') as f:
         pickle.dump(metrics, f)
         
     runtime = (time.time() - start_time)/60
