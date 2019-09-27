@@ -322,9 +322,10 @@ def read_chords(labels):
     
     #hard part: producing the list of notes
     chord_info['notes'] = ''
-    bass_octave = '4'
-    triad_octave = '5'
-    add_octave = '6'
+    bass_octave = '3'
+    root_octave = '4'
+    triad_octave = '4'
+    add_octave = '5'
     for i,row in chord_info.iterrows():
         if row.root == '~':
             continue
@@ -349,28 +350,28 @@ def read_chords(labels):
         if row.quality == 'maj':
             notes += ' ' + num_to_root[(row.rootnum+4) % 12] + triad_octave
             notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
-            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + root_octave
         elif row.quality == 'min':
             notes += ' ' + num_to_root[(row.rootnum+3) % 12] + triad_octave
             notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
-            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + root_octave
         elif row.quality == 'power':
             notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
-            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + root_octave
         elif row.quality == 'dim':
             notes += ' ' + num_to_root[(row.rootnum+3) % 12] + triad_octave
             notes += ' ' + num_to_root[(row.rootnum+6) % 12] + triad_octave
-            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + root_octave
         elif row.quality == 'aug':
             notes += ' ' + num_to_root[(row.rootnum+4) % 12] + triad_octave
             notes += ' ' + num_to_root[(row.rootnum+8) % 12] + triad_octave
-            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + root_octave
         elif row.quality == 'sus':
             notes += ' ' + num_to_root[(row.rootnum+5) % 12] + triad_octave
             notes += ' ' + num_to_root[(row.rootnum+7) % 12] + triad_octave
-            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + root_octave
         else: #unison case
-            notes += ' ' + num_to_root[row.rootnum] + triad_octave
+            notes += ' ' + num_to_root[row.rootnum] + root_octave
             
         #get add
         if row.interval == 'maj7':
