@@ -145,6 +145,9 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['root_F1_train'] = sklearn.metrics.f1_score(labels_train[:,0],root_predict_train,average='weighted')
     metrics['root_F1_valid'] = sklearn.metrics.f1_score(labels_valid[:,0],root_predict_valid,average='weighted')
     metrics['root_F1_test'] = sklearn.metrics.f1_score(labels_test[:,0],root_predict_test,average='weighted')
+    metrics['root_macro_train'] = sklearn.metrics.f1_score(labels_train[:,0],root_predict_train,average='macro')
+    metrics['root_macro_valid'] = sklearn.metrics.f1_score(labels_valid[:,0],root_predict_valid,average='macro')
+    metrics['root_macro_test'] = sklearn.metrics.f1_score(labels_test[:,0],root_predict_test,average='macro')
     
     quality_predict_train = quality_model.predict(standard_features_train)
     quality_predict_valid = quality_model.predict(standard_features_valid)
@@ -158,6 +161,9 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['quality_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='weighted')
     metrics['quality_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='weighted')
     metrics['quality_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='weighted')
+    metrics['quality_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='macro')
+    metrics['quality_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='macro')
+    metrics['quality_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='macro')
     
     add_predict_train = add_model.predict(standard_features_train)
     add_predict_valid = add_model.predict(standard_features_valid)
@@ -171,6 +177,9 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['add_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='weighted')
     metrics['add_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='weighted')
     metrics['add_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='weighted')
+    metrics['add_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='macro')
+    metrics['add_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='macro')
+    metrics['add_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='macro')
     
     inv_predict_train = inv_model.predict(standard_features_train)
     inv_predict_valid = inv_model.predict(standard_features_valid)
@@ -184,6 +193,9 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['inv_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='weighted')
     metrics['inv_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='weighted')
     metrics['inv_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='weighted')
+    metrics['inv_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='macro')
+    metrics['inv_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='macro')
+    metrics['inv_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='macro')
     
     #compute total accuracy
     all_predict_train = np.zeros((int(root_predict_train.shape[0]/12),4))
