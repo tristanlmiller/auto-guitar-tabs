@@ -1,0 +1,2 @@
+sourcepath,filepath,model,params
+full,xgb_final,xgb_tuned,"['T', '30', '10', '0.2', '0.1', '0.05', '0.05']"
