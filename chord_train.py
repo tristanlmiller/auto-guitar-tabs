@@ -2,12 +2,14 @@
 '''
 Trains a model on processed data, saves model as pickle.
 
-usage: source destination model [--frac fraction --metrics --params param1 param2 etc. ]
+usage: source destination model [--frac fraction --noT --metrics --params param1 param2 etc. ]
 
 Options:
 source - prefix of data files used for this model (same as what was provided to chord_process.py)
 destination - prefix of destination file names
 --frac fraction - fraction of training data to use, e.g. if you're making learning curves (Default = 1)
+--noT - Initially, I included additional transposed copies of the training data.
+    This option is specified for new data sets where I do *not* do this.
 --metrics - calculates metrics only using pre-existing model
 --params param1 param2 etc. - set of parameters that depends on the model type.  See model type for more info.
 '''
@@ -38,6 +40,7 @@ def main():
     source_dir = 'Data/processed/'
     target_dir = 'Models/'
     metrics_only = False
+    transpose = True
     params = []
     
     #parse user options
@@ -53,15 +56,18 @@ def main():
             print('fraction must be between 0 and 1')
             sys.exit(1)
         del args[0:2]
+    if args[0] == '--noT':
+        transpose = False
+        del args[0:1]
     if args[0] == '--metrics':
         metrics_only = True
         del args[0:1]
     if args[0] == '--params':
         for i in range(1,len(args)-1):
             params.append(args[i])
-    prepare_train(model, source, destination, source_dir, target_dir, fraction, metrics_only, params)
+    prepare_train(model, source, destination, source_dir, target_dir, fraction, transpose, metrics_only, params)
     
-def prepare_train(model, source, destination, source_dir, target_dir, fraction, metrics_only, params):
+def prepare_train(model, source, destination, source_dir, target_dir, fraction, transpose, metrics_only, params):
     '''Prepare data for training, and then train it'''
     
     start_time = time.time()
@@ -81,17 +87,27 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     standard_labels_test = np.load(f'{source_dir}{source}_lstest.npy')
     
     #select fraction of training songs
+    
     if fraction < 1:
-        og_size = int(labels_train.shape[0]/12)
-        kept_rows = np.arange(og_size) <= og_size*fraction
-        transpose_kept_rows = np.tile(kept_rows,12)
-        standard_rows = np.logical_and(~np.equal(labels_train[:og_size,0], -1), ~np.isnan(labels_train[:og_size,0]))
-        standard_kept_rows = kept_rows[standard_rows]
-        
-        features_train = features_train[transpose_kept_rows,:]
-        labels_train = labels_train[transpose_kept_rows,:]
-        standard_features_train = standard_features_train[standard_kept_rows,:]
-        standard_labels_train = standard_labels_train[standard_kept_rows,:]
+        if transpose:
+            og_size = int(labels_train.shape[0]/12)
+            kept_rows = np.arange(og_size) <= og_size*fraction
+            transpose_kept_rows = np.tile(kept_rows,12)
+            standard_rows = np.logical_and(~np.equal(labels_train[:og_size,0], -1), ~np.isnan(labels_train[:og_size,0]))
+            standard_kept_rows = kept_rows[standard_rows]
+
+            features_train = features_train[transpose_kept_rows,:]
+            labels_train = labels_train[transpose_kept_rows,:]
+            standard_features_train = standard_features_train[standard_kept_rows,:]
+            standard_labels_train = standard_labels_train[standard_kept_rows,:]
+        else:
+            #this case has not been tested yet
+            kept_rows = np.arange(labels_train.shape[0]) <= labels_train.shape[0]*fraction
+            features_train = features_train[kept_rows,:]
+            labels_train = labels_train[kept_rows,:]
+            kept_rows = np.arange(standard_labels_train.shape[0]) <= standard_labels_train.shape[0]*fraction
+            standard_features_train = standard_features_train[kept_rows,:]
+            standard_labels_train = standard_labels_train[kept_rows,:]
 
     if not metrics_only:
         #create and train models
@@ -198,10 +214,16 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['inv_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='macro')
     
     #compute total accuracy
-    all_predict_train = np.zeros((int(root_predict_train.shape[0]/12),4))
-    all_predict_train[:,0] = root_predict_train[0:all_predict_train.shape[0]]
-    notnan_train = ~np.isnan(labels_train[:,0])
-    standard_predict_train = (labels_train[notnan_train,0] >= 0)[0:all_predict_train.shape[0]]
+    if transpose:
+        all_predict_train = np.zeros((int(root_predict_train.shape[0]/12),4))
+        all_predict_train[:,0] = root_predict_train[0:all_predict_train.shape[0]]
+        notnan_train = ~np.isnan(labels_train[:,0])
+        standard_predict_train = (labels_train[notnan_train,0] >= 0)[0:all_predict_train.shape[0]]
+    else:
+        all_predict_train = np.zeros((root_predict_train.shape[0],4))
+        all_predict_train[:,0] = root_predict_train
+        notnan_train = ~np.isnan(labels_train[:,0])
+        standard_predict_train = labels_train[notnan_train,0] >= 0
     all_predict_train[standard_predict_train,1] = quality_predict_train
     all_predict_train[standard_predict_train,2] = add_predict_train
     all_predict_train[standard_predict_train,3] = inv_predict_train
