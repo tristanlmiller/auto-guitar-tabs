@@ -3,7 +3,7 @@
 Predicts chords for an mp3 at the given link, converts to readable format.
 Although this is labeled lr_predict, it can in fact be used for any model in the sklearn format.
 
-usage: link model destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note]
+usage: link model destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --time num_times]
 
 Options:
 link - youtube link to video
@@ -14,9 +14,7 @@ destination - name of file where results are saved
 --min minfreq - minimum frequency in the Constant-Q Transform (Default = 21.35 Hz, or F0)
 --oct num-octaves - number of octaves to include as featuress (Default = 7)
 --bin bins_per_note - number of CQT bins per note (of which there are 12 in an octave) (Default = 1)
---transpose - If True, then duplicates and transposes training data (Default = False)
---standard - If True, then saves extra copy of features transposed so root is C.
-    Also saves extra copy of train labels so that dimensions match (Default = False)
+--time num_times - number of times the features are duplicated by including previous timeblocks.
 '''
     
 import chord_loader
@@ -45,6 +43,7 @@ def main():
     minfreq = 21.35
     num_octaves = 7
     bins_per_note = 1
+    num_times = 1
     model_dir = 'Models/'
     target_dir = 'Results/'
     
@@ -67,17 +66,18 @@ def main():
     if args[0] == '--bin':
         bins_per_note = int(args[1])
         del args[0:2]
-    if args[0] == '--frac':
-        fraction = float(args[1])
+    if args[0] == '--time':
+        num_times = int(args[1])
         del args[0:2]
-    predict(link, model_filename, destination, block_length, minfreq, num_octaves, bins_per_note, model_dir, target_dir)
+    predict(link, model_filename, destination, block_length, minfreq, num_octaves, bins_per_note, model_dir, target_dir, num_times)
 
-def predict(link, model_filename, destination, block_length, minfreq, num_octaves, bins_per_note, model_dir, target_dir):
+def predict(link, model_filename, destination, block_length, minfreq, num_octaves, bins_per_note, model_dir, target_dir, num_times):
     if os.path.exists(f'{target_dir}{destination}.pkl'):
         return None
     #load music
     download_mp3(link,'Data/temp.mp3')
-    song_features = chord_loader.get_features("Data/temp.mp3",block_length,minfreq,num_octaves,bins_per_note)
+    song_features = chord_loader.get_features("Data/temp.mp3",block_length,minfreq,
+                                              num_octaves,bins_per_note,num_times=num_times)
     os.remove('Data/temp.mp3')
         
     #load models from pickles

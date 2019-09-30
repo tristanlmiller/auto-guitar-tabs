@@ -240,7 +240,7 @@ def get_true_block(block_length,minfreq,num_octaves,bins_per_note):
     true_block = hop_length/sr
     return true_block
     
-def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note):
+def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note, num_times=1):
     """Loads mp3 file and computes features (normalized dB spectra).
     The resulting block_length will be returned, as it won't be exactly what was asked for"""
     #calculate constants
@@ -266,6 +266,17 @@ def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note):
     features[1:,(5*bins_per_note+1):-(6*bins_per_note)] = (db - db_mean ) / db_std
     #very first column/row is a flag for start of song
     features[0,0] = 1
+    
+    if num_times > 1:
+        n_samples = features.shape[0]
+        n_features = features.shape[1]-1
+
+        output = np.ndarray((n_samples,n_features*num_times+1))
+        output[:,0] = features[:,0]
+        for i in range(num_times):
+            output[i:,(n_features*i+1):(n_features*(i+1)+1)] = features[:(-i),1:]
+        features = output
+    
     return features
 
 def blockify(df,block_length):
