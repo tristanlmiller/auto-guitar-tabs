@@ -35,7 +35,7 @@ def chord_output():
     
     model_path = 'xgb_final'
     lr_predict.predict(url, model_path, f"{video_code}", 0.5, 24.5, 7, 1,
-                        'Models/', 'Results/')
+                        'Models/', 'Results/', 1)
 
     results = pickle.load(open(f"Results/{video_code}.pkl", 'rb'))
     results['time'] = ['' if i % 2 == 1 else
