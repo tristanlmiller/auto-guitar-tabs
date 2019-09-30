@@ -1,0 +1,2 @@
+sourcepath,filepath,model,params
+multi,xgb_l002,xgb_supertuned,"['T', '49', '26', '26', '26', '5', '9', '9', '9', '0.02', '0.02', '0.02', '0.02']"

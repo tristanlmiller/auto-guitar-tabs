@@ -1,2 +1,2 @@
 sourcepath,filepath,model,params
-full,xgb_l01,xgb,"['T', '30', '10', '0.1']"
+multi,xgb_l01,xgb_supertuned,"['T', '49', '26', '26', '26', '5', '9', '9', '9', '0.1', '0.1', '0.1', '0.1']"
