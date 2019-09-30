@@ -267,6 +267,8 @@ def train(model, params, features_train,labels_train,features_valid,labels_valid
         return train_xgb(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
     elif model == 'xgb_tuned':
         return train_xgb_tuned(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
+    elif model == 'xgb_supertuned':
+        return train_xgb_supertuned(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test)
     else:
         print('Model selected is invalid/unimplemented!')
         sys.exit(q)
@@ -393,6 +395,68 @@ def train_xgb_tuned(model, params, features_train,labels_train,features_valid,la
     quality_model = xgb.XGBClassifier(learning_rate=learning_rate_quality, **model_options)
     add_model = xgb.XGBClassifier(learning_rate=learning_rate_add, **model_options)
     inv_model = xgb.XGBClassifier(learning_rate=learning_rate_inv, **model_options)
+    
+    #Train models
+    if weight == 'balanced':
+        root_model.fit(features_train, labels_train[:,0], sample_weight = get_weights(labels_train[:,0]))
+        quality_model.fit(standard_features_train, standard_labels_train[:,1],
+                          sample_weight = get_weights(standard_labels_train[:,1]))
+        add_model.fit(standard_features_train, standard_labels_train[:,2],
+                      sample_weight = get_weights(standard_labels_train[:,2]))
+        inv_model.fit(standard_features_train, standard_labels_train[:,3],
+                      sample_weight = get_weights(standard_labels_train[:,3]))
+    else:
+        root_model.fit(features_train, labels_train[:,0])
+        quality_model.fit(standard_features_train, standard_labels_train[:,1])
+        add_model.fit(standard_features_train, standard_labels_train[:,2])
+        inv_model.fit(standard_features_train, standard_labels_train[:,3])
+            
+    return root_model, quality_model, add_model, inv_model
+
+def train_xgb_supertuned(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
+    '''Extreme Gradient Boosting model, with all parameters tuned for each model
+    params:
+    sample weight ('T' for balanced or 'F' for none)
+    n_estimators_root (int, number of estimators for root)
+    n_estimators_quality (int, number of estimators for quality)
+    n_estimators_add (int, number of estimators for add)
+    n_estimators_inv (int, number of estimators for inv)
+    max_depth_root (int, max depth of each tree for root)
+    max_depth_quality (int, max depth of each tree for quality)
+    max_depth_add (int, max depth of each tree for add)
+    max_depth_inv (int, max depth of each tree for inv)
+    learning_rate_root (float, learning rate of root model)
+    learning_rate_quality (float, learning rate of quality model)
+    learning_rate_add (float, learning rate of add model)
+    learning_rate_inv (float, learning rate of inv model)
+    '''
+    weight = 'balanced' if params[0] == 'T' else None
+    num_estimators_root = int(params[1])
+    num_estimators_quality = int(params[2])
+    num_estimators_add = int(params[3])
+    num_estimators_inv = int(params[4])
+    max_depth_root = int(params[5])
+    max_depth_quality = int(params[6])
+    max_depth_add = int(params[7])
+    max_depth_inv = int(params[8])
+    learning_rate_root = float(params[9])
+    learning_rate_quality = float(params[10])
+    learning_rate_add = float(params[11])
+    learning_rate_inv = float(params[12])
+    
+    model_options = {'n_jobs':4}
+    root_model = xgb.XGBClassifier(learning_rate=learning_rate_root,
+                                   max_depth = max_depth_root,
+                                   n_estimators = num_estimators_root, **model_options)
+    quality_model = xgb.XGBClassifier(learning_rate=learning_rate_quality,
+                                   max_depth = max_depth_quality,
+                                   n_estimators = num_estimators_quality, **model_options)
+    add_model = xgb.XGBClassifier(learning_rate=learning_rate_add,
+                                   max_depth = max_depth_add,
+                                   n_estimators = num_estimators_add, **model_options)
+    inv_model = xgb.XGBClassifier(learning_rate=learning_rate_inv,
+                                   max_depth = max_depth_inv,
+                                   n_estimators = num_estimators_inv, **model_options)
     
     #Train models
     if weight == 'balanced':
