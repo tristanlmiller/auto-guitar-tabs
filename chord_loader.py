@@ -273,7 +273,8 @@ def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note, num_ti
 
         output = np.ndarray((n_samples,n_features*num_times+1))
         output[:,0] = features[:,0]
-        for i in range(num_times):
+        output[:,1:(n_features+1)] = features[:,1:]
+        for i in range(1,num_times):
             output[i:,(n_features*i+1):(n_features*(i+1)+1)] = features[:(-i),1:]
         features = output
     
