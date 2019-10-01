@@ -104,12 +104,14 @@
 
     for (button of document.getElementsByClassName('tone')) {
       button.addEventListener('click', (e) => {
-        // var note_list = e.target.getAttribute("data-notes").split(' ');
-        //  for (note of note_list) {
-        //   synth.triggerAttackRelease(note, '0.25');
-        //  }
         var note_list = e.target.getAttribute("data-notes").split(' ');
-          synth.triggerAttackRelease(note_list, '0.25');
+        var counter = 0
+        for (note of note_list) {
+          synth.triggerAttackRelease(note, 0.4-counter,'+' + counter.toString(10));
+          counter += 0.05
+        }
+        //var note_list = e.target.getAttribute("data-notes").split(' ');
+        //  synth.triggerAttackRelease(note_list, '0.25');
        });
      }
     </script>
