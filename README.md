@@ -3,7 +3,7 @@ Helping musicians play popular music.
 
 Tristan Miller
 
-Try the app at [autoguitartabs.xyz](autoguitartabs.xyz)!
+Try the app at [autoguitartabs.xyz](http://autoguitartabs.xyz)!
 
 To learn more, see [my slides](http://bit.ly/2ocNmn6)!
 
