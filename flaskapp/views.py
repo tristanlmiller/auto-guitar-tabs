@@ -32,7 +32,7 @@ def index():
 def chord_output():
     url = request.args.get('youtube_url')
     video_code = url[32:]
-    
+
     model_path = 'xgb_multifinal'
     lr_predict.predict(url, model_path, f"{video_code}", 0.5, 24.5, 7, 1,
                         'Models/', 'Results/', 3)
@@ -48,3 +48,17 @@ def chord_output():
     results['inv'].loc[nochange] = ''
 
     return render_template("output.html", predictions = results, video = video_code)
+
+@app.route('/demo')
+def chord_demo():
+    results = pd.DataFrame()
+    #results['time'] = ['']*8
+
+    results['root'] = ['A','B','C','C','C','C','C','C']
+    results['quality'] = ['maj','maj','maj','min','dim','maj','maj','maj']
+    results['interval'] = ['','','','','','maj7','','']
+    results['inv'] = ['','','','','','','/3','/5']
+    results['notes'] = ['A3 C#4 E4 A4','B3 D#4 F#4 B4','C3 E4 G4 C4','C3 Eb4 G4 C4',
+        'C3 Eb4 Gb4 C4','C3 E4 G4 C4 B5','E3 E4 G4 C4','G3 E4 G4 C4']
+
+    return render_template("demo.html", predictions = results)

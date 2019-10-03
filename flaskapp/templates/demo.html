@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/docs/4.1/assets/img/favicons/favicon.ico">
+
+    <title>Chord Identifier</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.1/examples/starter-template/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="../static/css/starter-template.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <!--main body-->
+    <div class="container starter-template">
+          <h1>Chord Examples</h1>
+    </div>
+
+    <!--Horizontal table-->
+    <div class="container width-override">
+      <table class="table leftbar fix-height">
+        <tr><th>Root</th></tr>
+        <tr><th>Quality</th></tr>
+        <tr><th>Add</th></tr>
+        <tr><th>Inversion</th></tr>
+        <tr><th>Play it!</th></tr>
+      </table>
+
+      <table class="table scrollable fix-height">
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td>{{ row['root'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td>{{ row['quality'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td>{{ row['interval'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td>{{ row['inv'] }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i,row in predictions.iterrows() %}
+            <td><button class="tone" data-notes="{{ row['notes'] }}">&nbsp;&nbsp;&nbsp;</button></td>
+          {% endfor %}
+        </tr>
+      </table>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <!--<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="../../assets/js/vendor/popper.min.js"></script>-->
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.0.1/Tone.min.js"></script>
+    <script>
+
+    var synth = new Tone.PolySynth(5).toMaster()
+
+    for (button of document.getElementsByClassName('tone')) {
+      button.addEventListener('click', (e) => {
+        var note_list = e.target.getAttribute("data-notes").split(' ');
+        var counter = 0
+        for (note of note_list) {
+          synth.triggerAttackRelease(note, 0.4-counter,'+' + counter.toString(10));
+          counter += 0.05
+        }
+        //var note_list = e.target.getAttribute("data-notes").split(' ');
+        //  synth.triggerAttackRelease(note_list, '0.25');
+       });
+     }
+    </script>
+  </body>
+</html>
