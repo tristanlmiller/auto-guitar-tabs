@@ -9,45 +9,44 @@ import librosa
 ############################################################
 
 #Root integer -> standardized note
-num_to_root = {0:'C',1:'Db',2:'D',3:'Eb',4:'E',5:'F',6:'F#',7:'G',8:'Ab',9:'A',10:'Bb',11:'B',-1:'~'}
+num_to_root = {0:'C',1:'C#',2:'D',3:'Eb',4:'E',5:'F',6:'F#',7:'G',8:'Ab',9:'A',10:'Bb',11:'B',-1:'~'}
 
 #Root note -> integer
 root_to_num = {'Cb':11,'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'E#':5,'Fb':4,'F':5,'F#':6,'Gb':6,
               'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,'B#':0,'N':-1,'X':np.nan}
 
-#shorthand -> chord quality
-shorthand_to_quality = {'1':'unison',
-                        '5':'power',
-                        'maj':'maj','min':'min','dim':'dim','aug':'aug','sus4':'sus',
-                        'sus2':'sus', #and change the root to the perfect 5th
-                        '7':'maj','min7':'min','maj7':'maj','hdim7':'dim','dim7':'dim','minmaj7':'min',
-                        'maj6':'maj','min6':'min',
-                        'min9':'min','maj9':'maj','9':'maj',
-                        '11':'maj','min11':'min','13':'maj','maj13':'maj','min13':'min'}
+#shorthand -> interval list (numbered 0 to 11)
+#only lists the triad and highest priority added interval
+#be careful, the values are mutable!
+shorthand_to_ranks = {'1':[0],
+                        '5':[0,7],
+                        'maj':[0,4,7],'min':[0,3,7],'dim':[0,3,6],'aug':[0,4,8],'sus4':[0,5,7],
+                        'sus2':[0,2,7],
+                        '7':[0,4,7,10],'min7':[0,3,7,10],'maj7':[0,4,7,11],
+                        'hdim7':[0,3,6,10],'dim7':[0,3,6,9],'minmaj7':[0,3,7,11],
+                        'maj6':[0,4,7,9],'min6':[0,3,7,9],
+                        'min9':[0,3,7,10,2],'maj9':[0,4,7,11,2],'9':[0,4,7,10,2],
+                        '11':[0,4,7,10,2,5],'min11':[0,3,7,10,2,5],
+                        '13':[0,4,7,10,2,5,9],'maj13':[0,4,7,11,2,5,9],'min13':[0,3,7,10,2,5,9]}
+
+#named interval -> numbered interval (0 to 11)
+interval_to_rank = {'7':11,
+                   'b7':10,'#6':10,
+                   '13':9,'6':9,
+                   'b13':8,'b6':8,'#5':8,
+                   '5':7,
+                   '#11':6,'#4':6,'b5':6,
+                   '11':5,'4':5,
+                   '3':4,'b4':4,'b11':4,
+                   'b3':3,'#2':3,'#9':3,
+                   '9':2,'2':2,
+                   'b9':1,'b2':1,
+                   '1':0}
 
 #chord quality -> number class
 quality_to_num = {'':0,'unison':7,'power':1,'maj':2,'min':3,'sus':4,'dim':5,'aug':6}
 #number class -> chord quality
 num_to_quality = {0:'',1:'power',2:'maj',3:'min',4:'sus',5:'dim',6:'aug',7:'unison'}
-
-#shorthand -> added interval, standardized
-shorthand_to_add = {'1':'',
-                    '5':'',
-                    'maj':'','min':'','dim':'','aug':'','sus4':'','sus2':'',
-                    '7':'7','min7':'7','maj7':'maj7','hdim7':'7','dim7':'6','minmaj7':'maj7',
-                    'maj6':'6','min6':'6',
-                    'min9':'9','maj9':'9','9':'9',
-                    '11':'4','min11':'4','13':'6','maj13':'6','min13':'6'}
-
-#interval list -> added interval, standardized
-interval_to_add = {'7':'maj7',
-                   'b7':'7','#6':'7',
-                   '9':'9','2':'9',
-                   'b9':'min9','b2':'min9',
-                    '11':'4','4':'4',
-                  '#11':'tt','#4':'tt','b5':'tt',
-                  '13':'6','6':'6',
-                   'b13':'min6','b6':'min6','#5':'min6'}
 
 #added interval -> number class
 add_to_num = {'':0,'maj7':1,'7':2,'9':3,'min9':4,'4':5,'tt':6,'6':7,'min6':8}
@@ -65,66 +64,78 @@ num_to_inv = {0:'',1:'/5',2:'/3'}
 
 #returns root in int format
 def get_root(row):
-    if row[1] == 'sus2':
-        return (root_to_num[row[0]] + 7) % 12
-    elif row[0] in root_to_num:
+    if row[0] in root_to_num:
         return root_to_num[row[0]]
     else:
         return np.nan
 
-#returns quality in int format
-def get_quality(row):
-    if row[1] in shorthand_to_quality:
-        return quality_to_num[shorthand_to_quality[row[1]]]
-    elif (row[0] != 'N') and (row[0] != 'X'):
-        #some chords just aren't labeled properly, but I think they're major chords.
-        if row[2] == '1,5':
-            return quality_to_num['power']
-        elif row[2] == '1':
-            return quality_to_num['unison']
-        else:
-            return quality_to_num['maj']
+#gets both the quality and add by extracting the full list of notes
+def get_quality_add(row):
+    if (row[0] == 'N') or (row[0] == 'X'):
+        return pd.Series([quality_to_num[''], add_to_num['']])
+    
+    #generate a set of intervals
+    intervals = set([0])
+    if row[1] in shorthand_to_ranks:
+        intervals = set(shorthand_to_ranks[row[1]])
     else:
-        return quality_to_num['']
+        if row[2] == '':
+            intervals = set(shorthand_to_ranks['maj'])
+    added_intervals = str(row[2]).split(',')
+    intervals.update(
+        [interval_to_rank[interval] for interval in added_intervals if interval in interval_to_rank])
+    
+    #find the quality
+    if 7 in intervals:
+        if 4 in intervals:
+            quality_num = quality_to_num['maj']
+        elif 3 in intervals:
+            quality_num = quality_to_num['min']
+        elif 5 in intervals:
+            quality_num = quality_to_num['sus']
+            intervals.remove(5)
+        else:
+            quality_num = quality_to_num['power']
+    elif 6 in intervals and 3 in intervals:
+        quality_num = quality_to_num['dim']
+        intervals.remove(6)
+    elif 8 in intervals and 4 in intervals:
+        quality_num = quality_to_num['aug']
+        intervals.remove(8)
+    else:
+        quality_num = quality_to_num['unison']
+    
+    #find the first added interval in this list:
+    #min9, min6, tt, 4, maj7, 6, 9, 7
+    if 1 in intervals:
+        add_num = add_to_num['min9']
+    elif 8 in intervals:
+        add_num = add_to_num['min6']
+    elif 6 in intervals:
+        add_num = add_to_num['tt']
+    elif 5 in intervals:
+        add_num = add_to_num['4']
+    elif 11 in intervals:
+        add_num = add_to_num['maj7']
+    elif 9 in intervals:
+        add_num = add_to_num['6']
+    elif 2 in intervals:
+        add_num = add_to_num['9']
+    elif 10 in intervals:
+        add_num = add_to_num['7']
+    else:
+        add_num = add_to_num['']
+    
+    return pd.Series([quality_num, add_num])
 
 #return inversion type in int format.  Only counts first and second inversions
 def simplify_inversion(row):
-    if row[1] == 'sus2':
-        return inv_to_num['']
     if row[3] in ['5','b5','#5','#4']:
         return inv_to_num['5']
     if row[3] in ['3','b3','b4']:
         return inv_to_num['3']
     else:
         return inv_to_num['']
-
-#return added interval in int format
-def get_add(row):
-    if (row[0] != 'N') and (row[0] != 'X'):
-        #valid chord
-        if row[1] == 'sus2':
-            #ignore sus2 chords, since it's too much of a pain to compute adds
-            return add_to_num['']
-        if row[1] in shorthand_to_add:
-            out = shorthand_to_add[row[1]]
-            if out:
-                #if the shorthand implies an add, use that one
-                return add_to_num[out]
-        #otherwise look for add in add column
-        if not row[2]:
-            #if no add is noted, there is no add
-            return add_to_num['']
-        #if adds are noted, check last one
-        interval = str(row[2]).split(',')[-1]
-        if interval not in interval_to_add:
-            #if the given add isn't one of the ones I care about (e.g. 5)
-            return add_to_num['']
-        else:
-            #if the given add is one I care about
-            return add_to_num[interval_to_add[interval]]
-    else:
-        #no valid chord means no add
-        return add_to_num['']
 
 ############################################################
 #Functions for loading and processing files
@@ -312,8 +323,7 @@ def chord_simplify(chords):
     
     out = np.zeros((m.shape[0],4))
     out[:,0] = m.apply(lambda x: get_root(x),axis=1)
-    out[:,1] = m.apply(lambda x: get_quality(x),axis=1)
-    out[:,2] = m.apply(lambda x: get_add(x),axis=1)
+    out[:,1:3] = m.apply(lambda x: get_quality_add(x),axis=1)
     out[:,3] = m.apply(lambda x: simplify_inversion(x),axis=1)
     
     return out
