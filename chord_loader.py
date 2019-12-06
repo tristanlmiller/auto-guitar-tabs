@@ -252,8 +252,7 @@ def get_true_block(block_length,minfreq,num_octaves,bins_per_note):
     return true_block
     
 def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note, num_times=1):
-    """Loads mp3 file and computes features (normalized dB spectra).
-    The resulting block_length will be returned, as it won't be exactly what was asked for"""
+    """Loads mp3 file and computes features (normalized dB spectra)."""
     #calculate constants
     maxfreq = minfreq*(2**num_octaves)
     sr = 4*maxfreq
@@ -268,13 +267,16 @@ def get_features(filepath,block_length,minfreq,num_octaves,bins_per_note, num_ti
                'n_bins':num_octaves*bins_per_note*12,
                'bins_per_octave':bins_per_note*12}
     spec = librosa.cqt(wav, **cqt_options)
-    #convert to features
+    #convert to dB
     db = librosa.amplitude_to_db(np.abs(spec)).T
     db_mean = np.mean(db)
     db_std = np.std(db)
+    db = (db - db_mean)/(db_std+.0001)
     #features is padded out by one row, one column, plus column-space for transposition
     features = np.zeros((db.shape[0]+1,11*bins_per_note+db.shape[1]+1))
-    features[1:,(5*bins_per_note+1):-(6*bins_per_note)] = (db - db_mean ) / db_std
+    features[1:,(5*bins_per_note+1):-(6*bins_per_note)] = db
+    features[1:,1:(5*bins_per_note+1)] = features[1:,5*bins_per_note+1].reshape(-1,1)
+    features[1:,-(6*bins_per_note):] = features[1:,-(6*bins_per_note+1)].reshape(-1,1)
     #very first column/row is a flag for start of song
     features[0,0] = 1
     
