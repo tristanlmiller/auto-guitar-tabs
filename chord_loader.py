@@ -213,23 +213,37 @@ def standardize_root(features,labels,bins_per_note,dropna=True,transposed=False)
         og_size = features.shape[0]
     num_features = features.shape[1]
     
-    duplicate_features = np.zeros((og_size,num_features))
-    duplicate_features[:,0] = features[:og_size,0]
-    for j,i in enumerate(labels[:og_size,0]):
+    t_size = labels[:og_size,0]
+    t_size[t_size<0] = 0
+    t_size = (((labels[:og_size,0] + 5) % 12) - 5)*bins_per_note
+    
+    new_features = np.zeros((og_size,num_features))
+    for j,i in enumerate(t_size):
         i = int(i)
-        if i > 0 and i <= 6:
-            duplicate_features[j,1:(-i*bins_per_note)] = features[j,(1+i*bins_per_note):]
-        elif i > 6:
-            i -= 12
-            duplicate_features[j,(1-i*bins_per_note):] = features[j,1:(i*bins_per_note)]
-        elif i == 0:
-            duplicate_features[j,:] = features[j,:]
+        new_features[j,1:] = np.roll(features[j,1:],i)
+        if i > 0:
+            new_features[j,1:(i+1)] = features[j,1]
+        elif i < 0:
+            new_features[j,i:] = features[j,-1]
+    
     if dropna:
         valid_rows = np.logical_and(~np.equal(labels[:og_size,0], -1), ~np.isnan(labels[:og_size,0]))
-        duplicate_features = duplicate_features[valid_rows,:]
+        new_features = new_features[valid_rows,:]
         duplicate_labels = (labels[:og_size,:])[valid_rows,:]
-    return duplicate_features, duplicate_labels
-                                                  
+    return new_features, duplicate_labels
+
+def standardize_row(row,bins_per_note):
+    '''A helper function for standardize_root.
+    Takes in a pre-processed row, whose first element is the size of transposition (between -5 and 6).
+    Returns a transposed row.'''
+    out = np.roll(row[1:],row[0]*bins_per_note)
+    if row[0] > 0:
+        out[:(row[0]*bins_per_note)] = row[1]
+    elif row[0] < 0:
+        out[-(row[0]*bins_per_note):] = row[-1]
+    return row
+    
+    
                                                   
 def transpose_root(roots,transposition):
     """transposes an array of roots"""
