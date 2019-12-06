@@ -181,24 +181,15 @@ def get_features_labels(song_list,block_length,minfreq,num_octaves,bins_per_note
         num_features = all_features.shape[1]
         labels_copy = all_labels.copy()
         #duplicate and transpose data
-        for i in range(-5,0):
-            duplicate_features = np.zeros((og_size,num_features))
-            duplicate_features[:,1:(i*bins_per_note)] = all_features[:og_size,(1-i*bins_per_note):]
-            duplicate_features[:,0] = all_features[:og_size,0]
+        for i in range(1,12):
+            dummy_labels = np.zeros((og_size,1)) + i
+            new_features,_ = standardize_root(
+                all_features[:og_size,:],dummy_labels,bins_per_note,dropna=False,transposed=False)
+            
             duplicate_labels = labels_copy.copy()
             duplicate_labels[:,0] = transpose_root(duplicate_labels[:,0],i)
             
-            all_features = np.concatenate((all_features,duplicate_features),axis=0)
-            all_labels = np.concatenate((all_labels,duplicate_labels),axis=0)
-            
-        for i in range(1,7):
-            duplicate_features = np.zeros((og_size,num_features))
-            duplicate_features[:,(1+i*bins_per_note):] = all_features[:og_size,1:(-i*bins_per_note)]
-            duplicate_features[:,0] = all_features[:og_size,0]
-            duplicate_labels = labels_copy.copy()
-            duplicate_labels[:,0] = transpose_root(duplicate_labels[:,0],i)
-            
-            all_features = np.concatenate((all_features,duplicate_features),axis=0)
+            all_features = np.concatenate((all_features,new_features),axis=0)
             all_labels = np.concatenate((all_labels,duplicate_labels),axis=0)
         
     return all_features,all_labels
@@ -230,6 +221,8 @@ def standardize_root(features,labels,bins_per_note,dropna=True,transposed=False)
         valid_rows = np.logical_and(~np.equal(labels[:og_size,0], -1), ~np.isnan(labels[:og_size,0]))
         new_features = new_features[valid_rows,:]
         duplicate_labels = (labels[:og_size,:])[valid_rows,:]
+    else:
+        duplicate_labels = None
     return new_features, duplicate_labels
 
 def standardize_row(row,bins_per_note):
