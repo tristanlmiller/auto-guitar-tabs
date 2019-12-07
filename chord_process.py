@@ -2,7 +2,7 @@
 '''
 Processes all chords and mp3s and saves them as npy files.
 
-usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --frac fraction]
+usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --frac fraction --notrans]
 
 Options:
 destination - prefix for the names of destination files
@@ -13,7 +13,7 @@ Files will be saved with the following suffixes:
     _lvalid.npy - validation set labels
     _ftest.npy - test set features
     _ltest.npy - test set labels
-If standard option is used, also saves files with these suffixes:
+If standard option is used (now always on), also saves files with these suffixes:
     _fstrain.npy - standardized training set features
     _lstrain.npy - standardized training set labels
     _fsvalid.npy - standardized validation set features
@@ -26,6 +26,7 @@ If standard option is used, also saves files with these suffixes:
 --oct num-octaves - number of octaves to include as featuress (Default = 7)
 --bin bins_per_note - number of CQT bins per note (of which there are 12 in an octave) (Default = 1)
 --fraction - Use only on fraction of data (Default = 1)
+--notrans - Omit duplication/transposition step
 '''
     
 import chord_loader
@@ -42,7 +43,7 @@ def main():
     args.append('')
     
     if not args:
-        print('usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --frac fraction]')
+        print('usage: destination [--block block_length --min minfreq --oct num_octaves --bin bins_per_note --frac fraction --notrans]')
         sys.exit(1)
     
     #default options:
@@ -50,7 +51,7 @@ def main():
     minfreq = 24.5 # G0
     num_octaves = 7
     bins_per_note = 1
-    transpose = True #now always true
+    transpose = True
     standard = True #now always true
     fraction = 1
     target_dir = 'Data/processed/'
@@ -73,6 +74,9 @@ def main():
     if args[0] == '--frac':
         fraction = float(args[1])
         del args[0:2]
+    if args[0] == '--notrans':
+        transpose = False
+        del args[0]
     
     #load directory and split into train, validation, and test sets
     print('Performing test/training split')

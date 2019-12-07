@@ -235,8 +235,6 @@ def standardize_row(row,bins_per_note):
     elif row[0] < 0:
         out[-(row[0]*bins_per_note):] = row[-1]
     return row
-    
-    
                                                   
 def transpose_root(roots,transposition):
     """transposes an array of roots"""
