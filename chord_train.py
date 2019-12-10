@@ -7,10 +7,12 @@ usage: source destination model [--frac fraction --noT --metrics --params param1
 Options:
 source - prefix of data files used for this model (same as what was provided to chord_process.py)
 destination - prefix of destination file names
+model - type of model from this list: lr, rf, xgb, xgb_tuned, xgb_supertuned
 --frac fraction - fraction of training data to use, e.g. if you're making learning curves (Default = 1)
 --noT - Initially, I included additional transposed copies of the training data.
     This option is specified for new data sets where I do *not* do this.
 --metrics - calculates metrics only using pre-existing model
+--root - only creates a model for root (currently only implemented for lr)
 --params param1 param2 etc. - set of parameters that depends on the model type.  See model type for more info.
 '''
     
@@ -31,7 +33,7 @@ def main():
     args.append('')
     
     if not args:
-        print('usage: source destination model [--frac fraction --metrics --params param1 param2 etc. ]')
+        print('usage: source destination model [--frac fraction --metrics --root --params param1 param2 etc. ]')
         sys.exit(1)
     
     #default options:
@@ -40,6 +42,7 @@ def main():
     source_dir = 'Data/processed/'
     target_dir = 'Models/'
     metrics_only = False
+    root_only = False
     transpose = True
     params = []
     
@@ -62,12 +65,15 @@ def main():
     if args[0] == '--metrics':
         metrics_only = True
         del args[0:1]
+    if args[0] == '--root':
+        root_only = True
+        del args[0:1]
     if args[0] == '--params':
         for i in range(1,len(args)-1):
             params.append(args[i])
-    prepare_train(model, source, destination, source_dir, target_dir, fraction, transpose, metrics_only, params)
+    prepare_train(model, source, destination, source_dir, target_dir, fraction, transpose, metrics_only, root_only, params)
     
-def prepare_train(model, source, destination, source_dir, target_dir, fraction, transpose, metrics_only, params):
+def prepare_train(model, source, destination, source_dir, target_dir, fraction, transpose, metrics_only, root_only, params):
     '''Prepare data for training, and then train it'''
     
     start_time = time.time()
@@ -79,12 +85,13 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     labels_valid = np.load(f'{source_dir}{source}_lvalid.npy')
     features_test = np.load(f'{source_dir}{source}_ftest.npy')
     labels_test = np.load(f'{source_dir}{source}_ltest.npy')
-    standard_features_train = np.load(f'{source_dir}{source}_fstrain.npy')
-    standard_labels_train = np.load(f'{source_dir}{source}_lstrain.npy')
-    standard_features_valid = np.load(f'{source_dir}{source}_fsvalid.npy')
-    standard_labels_valid = np.load(f'{source_dir}{source}_lsvalid.npy')
-    standard_features_test = np.load(f'{source_dir}{source}_fstest.npy')
-    standard_labels_test = np.load(f'{source_dir}{source}_lstest.npy')
+    if not root_only:
+        standard_features_train = np.load(f'{source_dir}{source}_fstrain.npy')
+        standard_labels_train = np.load(f'{source_dir}{source}_lstrain.npy')
+        standard_features_valid = np.load(f'{source_dir}{source}_fsvalid.npy')
+        standard_labels_valid = np.load(f'{source_dir}{source}_lsvalid.npy')
+        standard_features_test = np.load(f'{source_dir}{source}_fstest.npy')
+        standard_labels_test = np.load(f'{source_dir}{source}_lstest.npy')
     
     #select fraction of training songs
     
@@ -93,44 +100,60 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
             og_size = int(labels_train.shape[0]/12)
             kept_rows = np.arange(og_size) <= og_size*fraction
             transpose_kept_rows = np.tile(kept_rows,12)
-            standard_rows = np.logical_and(~np.equal(labels_train[:og_size,0], -1), ~np.isnan(labels_train[:og_size,0]))
-            standard_kept_rows = kept_rows[standard_rows]
-
+            
             features_train = features_train[transpose_kept_rows,:]
             labels_train = labels_train[transpose_kept_rows,:]
-            standard_features_train = standard_features_train[standard_kept_rows,:]
-            standard_labels_train = standard_labels_train[standard_kept_rows,:]
+            
+            if not root_only:
+                standard_rows = np.logical_and(~np.equal(labels_train[:og_size,0], -1), ~np.isnan(labels_train[:og_size,0]))
+                standard_kept_rows = kept_rows[standard_rows]
+
+                standard_features_train = standard_features_train[standard_kept_rows,:]
+                standard_labels_train = standard_labels_train[standard_kept_rows,:]
         else:
             #this case has not been tested yet
             kept_rows = np.arange(labels_train.shape[0]) <= labels_train.shape[0]*fraction
             features_train = features_train[kept_rows,:]
             labels_train = labels_train[kept_rows,:]
-            kept_rows = np.arange(standard_labels_train.shape[0]) <= standard_labels_train.shape[0]*fraction
-            standard_features_train = standard_features_train[kept_rows,:]
-            standard_labels_train = standard_labels_train[kept_rows,:]
+            
+            if not root_only:
+                kept_rows = np.arange(standard_labels_train.shape[0]) <= standard_labels_train.shape[0]*fraction
+                standard_features_train = standard_features_train[kept_rows,:]
+                standard_labels_train = standard_labels_train[kept_rows,:]
 
     if not metrics_only:
         #create and train models
-        root_model, quality_model, add_model, inv_model = train(model, params,
-            features_train,
-            labels_train,
-            features_valid,
-            labels_valid,
-            features_test,
-            labels_test,
-            standard_features_train,
-            standard_labels_train,
-            standard_features_valid,
-            standard_labels_valid,
-            standard_features_test,
-            standard_labels_test)
+        if not root_only:
+            root_model, quality_model, add_model, inv_model = train(model, params,
+                features_train,
+                labels_train,
+                features_valid,
+                labels_valid,
+                features_test,
+                labels_test,
+                standard_features_train,
+                standard_labels_train,
+                standard_features_valid,
+                standard_labels_valid,
+                standard_features_test,
+                standard_labels_test)
+        else:
+            root_model = train(model, params,
+                features_train,
+                labels_train,
+                features_valid,
+                labels_valid,
+                features_test,
+                labels_test,
+                None, None, None, None, None, None)
         
         #save models
         with open(f'{target_dir}{destination}.pkl', 'wb') as f:
             pickle.dump(root_model, f)
-            pickle.dump(quality_model, f)
-            pickle.dump(add_model, f)
-            pickle.dump(inv_model, f)
+            if not root_only:
+                pickle.dump(quality_model, f)
+                pickle.dump(add_model, f)
+                pickle.dump(inv_model, f)
         
         #generate info file
         info = pd.DataFrame(columns=['sourcepath','filepath','model','params'])
@@ -143,9 +166,10 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     else:
         with open(f'{target_dir}{destination}.pkl', 'rb') as f:
             root_model = pickle.load(f)
-            quality_model = pickle.load(f)
-            add_model = pickle.load(f)
-            inv_model = pickle.load(f)
+            if not root_only:
+                quality_model = pickle.load(f)
+                add_model = pickle.load(f)
+                inv_model = pickle.load(f)
         
     #Get F1, accuracy, and confusion_matrix metrics
     metrics = {}
@@ -165,90 +189,91 @@ def prepare_train(model, source, destination, source_dir, target_dir, fraction, 
     metrics['root_macro_valid'] = sklearn.metrics.f1_score(labels_valid[:,0],root_predict_valid,average='macro')
     metrics['root_macro_test'] = sklearn.metrics.f1_score(labels_test[:,0],root_predict_test,average='macro')
     
-    quality_predict_train = quality_model.predict(standard_features_train)
-    quality_predict_valid = quality_model.predict(standard_features_valid)
-    quality_predict_test = quality_model.predict(standard_features_test)
-    metrics['quality_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,1],quality_predict_train)
-    metrics['quality_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,1],quality_predict_valid)
-    metrics['quality_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,1],quality_predict_test)
-    metrics['quality_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,1],quality_predict_train,labels=range(8))
-    metrics['quality_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,1],quality_predict_valid,labels=range(8))
-    metrics['quality_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,1],quality_predict_test,labels=range(8))
-    metrics['quality_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='weighted')
-    metrics['quality_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='weighted')
-    metrics['quality_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='weighted')
-    metrics['quality_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='macro')
-    metrics['quality_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='macro')
-    metrics['quality_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='macro')
-    
-    add_predict_train = add_model.predict(standard_features_train)
-    add_predict_valid = add_model.predict(standard_features_valid)
-    add_predict_test = add_model.predict(standard_features_test)
-    metrics['add_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,2],add_predict_train)
-    metrics['add_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,2],add_predict_valid)
-    metrics['add_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,2],add_predict_test)
-    metrics['add_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,2],add_predict_train,labels=range(9))
-    metrics['add_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,2],add_predict_valid,labels=range(9))
-    metrics['add_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,2],add_predict_test,labels=range(9))
-    metrics['add_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='weighted')
-    metrics['add_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='weighted')
-    metrics['add_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='weighted')
-    metrics['add_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='macro')
-    metrics['add_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='macro')
-    metrics['add_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='macro')
-    
-    inv_predict_train = inv_model.predict(standard_features_train)
-    inv_predict_valid = inv_model.predict(standard_features_valid)
-    inv_predict_test = inv_model.predict(standard_features_test)
-    metrics['inv_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,3],inv_predict_train)
-    metrics['inv_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,3],inv_predict_valid)
-    metrics['inv_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,3],inv_predict_test)
-    metrics['inv_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,3],inv_predict_train,labels=range(3))
-    metrics['inv_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,3],inv_predict_valid,labels=range(3))
-    metrics['inv_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,3],inv_predict_test,labels=range(3))
-    metrics['inv_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='weighted')
-    metrics['inv_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='weighted')
-    metrics['inv_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='weighted')
-    metrics['inv_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='macro')
-    metrics['inv_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='macro')
-    metrics['inv_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='macro')
-    
-    #compute total accuracy
-    if transpose:
-        all_predict_train = np.zeros((int(root_predict_train.shape[0]/12),4))
-        all_predict_train[:,0] = root_predict_train[0:all_predict_train.shape[0]]
-        notnan_train = ~np.isnan(labels_train[:,0])
-        standard_predict_train = (labels_train[notnan_train,0] >= 0)[0:all_predict_train.shape[0]]
-    else:
-        all_predict_train = np.zeros((root_predict_train.shape[0],4))
-        all_predict_train[:,0] = root_predict_train
-        notnan_train = ~np.isnan(labels_train[:,0])
-        standard_predict_train = labels_train[notnan_train,0] >= 0
-    all_predict_train[standard_predict_train,1] = quality_predict_train
-    all_predict_train[standard_predict_train,2] = add_predict_train
-    all_predict_train[standard_predict_train,3] = inv_predict_train
-    total_acc_train = np.all(all_predict_train == (labels_train[notnan_train,:])[0:all_predict_train.shape[0]],axis=1)
-    metrics['total_acc_train'] = sum(total_acc_train)/len(total_acc_train)
-    
-    all_predict_valid = np.zeros((root_predict_valid.shape[0],4))
-    all_predict_valid[:,0] = root_predict_valid
-    notnan_valid = ~np.isnan(labels_valid[:,0])
-    standard_predict_valid = labels_valid[notnan_valid,0] >= 0
-    all_predict_valid[standard_predict_valid,1] = quality_predict_valid
-    all_predict_valid[standard_predict_valid,2] = add_predict_valid
-    all_predict_valid[standard_predict_valid,3] = inv_predict_valid
-    total_acc_valid = np.all(all_predict_valid == labels_valid[notnan_valid,:],axis=1)
-    metrics['total_acc_valid'] = sum(total_acc_valid)/len(total_acc_valid)
-    
-    all_predict_test = np.zeros((root_predict_test.shape[0],4))
-    all_predict_test[:,0] = root_predict_test
-    notnan_test = ~np.isnan(labels_test[:,0])
-    standard_predict_test = labels_test[notnan_test,0] >= 0
-    all_predict_test[standard_predict_test,1] = quality_predict_test
-    all_predict_test[standard_predict_test,2] = add_predict_test
-    all_predict_test[standard_predict_test,3] = inv_predict_test
-    total_acc_test = np.all(all_predict_test == labels_test[notnan_test,:],axis=1)
-    metrics['total_acc_test'] = sum(total_acc_test)/len(total_acc_test)
+    if not root_only:
+        quality_predict_train = quality_model.predict(standard_features_train)
+        quality_predict_valid = quality_model.predict(standard_features_valid)
+        quality_predict_test = quality_model.predict(standard_features_test)
+        metrics['quality_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,1],quality_predict_train)
+        metrics['quality_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,1],quality_predict_valid)
+        metrics['quality_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,1],quality_predict_test)
+        metrics['quality_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,1],quality_predict_train,labels=range(8))
+        metrics['quality_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,1],quality_predict_valid,labels=range(8))
+        metrics['quality_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,1],quality_predict_test,labels=range(8))
+        metrics['quality_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='weighted')
+        metrics['quality_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='weighted')
+        metrics['quality_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='weighted')
+        metrics['quality_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,1],quality_predict_train,average='macro')
+        metrics['quality_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,1],quality_predict_valid,average='macro')
+        metrics['quality_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,1],quality_predict_test,average='macro')
+
+        add_predict_train = add_model.predict(standard_features_train)
+        add_predict_valid = add_model.predict(standard_features_valid)
+        add_predict_test = add_model.predict(standard_features_test)
+        metrics['add_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,2],add_predict_train)
+        metrics['add_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,2],add_predict_valid)
+        metrics['add_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,2],add_predict_test)
+        metrics['add_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,2],add_predict_train,labels=range(9))
+        metrics['add_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,2],add_predict_valid,labels=range(9))
+        metrics['add_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,2],add_predict_test,labels=range(9))
+        metrics['add_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='weighted')
+        metrics['add_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='weighted')
+        metrics['add_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='weighted')
+        metrics['add_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,2],add_predict_train,average='macro')
+        metrics['add_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,2],add_predict_valid,average='macro')
+        metrics['add_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,2],add_predict_test,average='macro')
+
+        inv_predict_train = inv_model.predict(standard_features_train)
+        inv_predict_valid = inv_model.predict(standard_features_valid)
+        inv_predict_test = inv_model.predict(standard_features_test)
+        metrics['inv_acc_train'] = sklearn.metrics.accuracy_score(standard_labels_train[:,3],inv_predict_train)
+        metrics['inv_acc_valid'] = sklearn.metrics.accuracy_score(standard_labels_valid[:,3],inv_predict_valid)
+        metrics['inv_acc_test'] = sklearn.metrics.accuracy_score(standard_labels_test[:,3],inv_predict_test)
+        metrics['inv_cmat_train'] = sklearn.metrics.confusion_matrix(standard_labels_train[:,3],inv_predict_train,labels=range(3))
+        metrics['inv_cmat_valid'] = sklearn.metrics.confusion_matrix(standard_labels_valid[:,3],inv_predict_valid,labels=range(3))
+        metrics['inv_cmat_test'] = sklearn.metrics.confusion_matrix(standard_labels_test[:,3],inv_predict_test,labels=range(3))
+        metrics['inv_F1_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='weighted')
+        metrics['inv_F1_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='weighted')
+        metrics['inv_F1_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='weighted')
+        metrics['inv_macro_train'] = sklearn.metrics.f1_score(standard_labels_train[:,3],inv_predict_train,average='macro')
+        metrics['inv_macro_valid'] = sklearn.metrics.f1_score(standard_labels_valid[:,3],inv_predict_valid,average='macro')
+        metrics['inv_macro_test'] = sklearn.metrics.f1_score(standard_labels_test[:,3],inv_predict_test,average='macro')
+
+        #compute total accuracy
+        if transpose:
+            all_predict_train = np.zeros((int(root_predict_train.shape[0]/12),4))
+            all_predict_train[:,0] = root_predict_train[0:all_predict_train.shape[0]]
+            notnan_train = ~np.isnan(labels_train[:,0])
+            standard_predict_train = (labels_train[notnan_train,0] >= 0)[0:all_predict_train.shape[0]]
+        else:
+            all_predict_train = np.zeros((root_predict_train.shape[0],4))
+            all_predict_train[:,0] = root_predict_train
+            notnan_train = ~np.isnan(labels_train[:,0])
+            standard_predict_train = labels_train[notnan_train,0] >= 0
+        all_predict_train[standard_predict_train,1] = quality_predict_train
+        all_predict_train[standard_predict_train,2] = add_predict_train
+        all_predict_train[standard_predict_train,3] = inv_predict_train
+        total_acc_train = np.all(all_predict_train == (labels_train[notnan_train,:])[0:all_predict_train.shape[0]],axis=1)
+        metrics['total_acc_train'] = sum(total_acc_train)/len(total_acc_train)
+
+        all_predict_valid = np.zeros((root_predict_valid.shape[0],4))
+        all_predict_valid[:,0] = root_predict_valid
+        notnan_valid = ~np.isnan(labels_valid[:,0])
+        standard_predict_valid = labels_valid[notnan_valid,0] >= 0
+        all_predict_valid[standard_predict_valid,1] = quality_predict_valid
+        all_predict_valid[standard_predict_valid,2] = add_predict_valid
+        all_predict_valid[standard_predict_valid,3] = inv_predict_valid
+        total_acc_valid = np.all(all_predict_valid == labels_valid[notnan_valid,:],axis=1)
+        metrics['total_acc_valid'] = sum(total_acc_valid)/len(total_acc_valid)
+
+        all_predict_test = np.zeros((root_predict_test.shape[0],4))
+        all_predict_test[:,0] = root_predict_test
+        notnan_test = ~np.isnan(labels_test[:,0])
+        standard_predict_test = labels_test[notnan_test,0] >= 0
+        all_predict_test[standard_predict_test,1] = quality_predict_test
+        all_predict_test[standard_predict_test,2] = add_predict_test
+        all_predict_test[standard_predict_test,3] = inv_predict_test
+        total_acc_test = np.all(all_predict_test == labels_test[notnan_test,:],axis=1)
+        metrics['total_acc_test'] = sum(total_acc_test)/len(total_acc_test)
 
     #save metrics
     with open(f'{target_dir}{destination}_metrics.pkl', 'wb') as f:
@@ -279,6 +304,7 @@ def train_lr(model, params, features_train,labels_train,features_valid,labels_va
     sample weight ('T' for balanced or 'F' for none)
     L2weight (float, regularization parameter)
     '''
+    root_only = standard_labels_train is None
     weight = 'balanced' if params[0] == 'T' else None
     L2weight = float(params[1])
     
@@ -288,17 +314,21 @@ def train_lr(model, params, features_train,labels_train,features_valid,labels_va
                'solver':'lbfgs',
                'max_iter':1000}
     root_model = LogisticRegression(**options)
-    quality_model = LogisticRegression(**options)
-    add_model = LogisticRegression(**options)
-    inv_model = LogisticRegression(**options)
-    
-    #Train models
     root_model.fit(features_train, labels_train[:,0])
-    quality_model.fit(standard_features_train, standard_labels_train[:,1])
-    add_model.fit(standard_features_train, standard_labels_train[:,2])
-    inv_model.fit(standard_features_train, standard_labels_train[:,3])
     
-    return root_model, quality_model, add_model, inv_model
+    if not root_only:
+        quality_model = LogisticRegression(**options)
+        add_model = LogisticRegression(**options)
+        inv_model = LogisticRegression(**options)
+    
+        quality_model.fit(standard_features_train, standard_labels_train[:,1])
+        add_model.fit(standard_features_train, standard_labels_train[:,2])
+        inv_model.fit(standard_features_train, standard_labels_train[:,3])
+    
+    if not root_only:
+        return root_model, quality_model, add_model, inv_model
+    else:
+        return root_model
 
 def train_rf(model, params, features_train,labels_train,features_valid,labels_valid,features_test,labels_test,standard_features_train,standard_labels_train,standard_features_valid,standard_labels_valid,standard_features_test,standard_labels_test):
     '''Random Forest model
