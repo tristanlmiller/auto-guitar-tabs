@@ -204,7 +204,7 @@ def standardize_root(features,labels,bins_per_note,dropna=True,transposed=False)
         og_size = features.shape[0]
     num_features = features.shape[1]
     
-    t_size = labels[:og_size,0]
+    t_size = labels[:og_size,0].copy()
     t_size[t_size<0] = 0
     t_size = (((labels[:og_size,0] + 5) % 12) - 5)*bins_per_note
     
