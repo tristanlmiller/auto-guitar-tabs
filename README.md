@@ -3,9 +3,9 @@ Helping musicians play popular music.
 
 Tristan Miller
 
-Try the app at [autoguitartabs.xyz](http://autoguitartabs.xyz)!
-
 To learn more, see [my slides](http://bit.ly/2ocNmn6)!
+
+The app, originally located at http://autoguitartabs.xyz is no longer online.
 
 Many musicians at all levels of expertise are interested in playing their favorite songs, but one of the most difficult steps is identifying the correct chords.  My app will take in a link to any YouTube video, and analyze the audio to identify chords.
 
